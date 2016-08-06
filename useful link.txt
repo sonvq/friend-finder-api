@@ -3,3 +3,15 @@ https://popapp.in/w/projects/576238d14c3d81113872ef33/mockups/576238f5f906f1ef5c
 
 milestone
 https://docs.google.com/spreadsheets/d/1XH4w2r_ZdUIZoe2DHOw__oF96x3xHHkkzG3lwbukEV0/edit#gid=0
+
+documentation
+https://github.com/merlosy/laravel-restful-api-starter/wiki
+
+commands
+$ php artisan migrate:refresh
+
+http://graph.facebook.com/1238052666218464/picture?type=square
+http://graph.facebook.com/1238052666218464/picture?type=small
+http://graph.facebook.com/1238052666218464/picture?type=normal
+http://graph.facebook.com/1238052666218464/picture?type=large
+

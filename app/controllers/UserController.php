@@ -75,8 +75,71 @@ class UserController extends BaseController {
 			return ApiResponse::validation($validator);
 		}
 	}
+    
+    protected function caculateAgeFromBirthday ($birthDay) {
+        //explode the date to get month, day and year
+        $birthDate = explode("/", $birthDay);
+        //get age from date or birthdate
+        $age = (date("md", date("U", mktime(0, 0, 0, $birthDate[0], $birthDate[1], $birthDate[2]))) > date("md")
+          ? ((date("Y") - $birthDate[2]) - 1)
+          : (date("Y") - $birthDate[2]));
+        
+        return $age;
+    }
+    
+    protected function postProcessUserArray(User $userObject) {
+        $userArray = $userObject->toArray();
+        
+        if (isset($userArray['profile_image']) && $userArray['profile_image']) {
+            $userArray['profile_image_square'] = $userArray['profile_image'] . '?type=square';
+            $userArray['profile_image_small'] = $userArray['profile_image'] . '?type=small';
+            $userArray['profile_image_normal'] = $userArray['profile_image'] . '?type=normal';
+            $userArray['profile_image_large'] = $userArray['profile_image'] . '?type=large';
+        }
+        if (isset($userArray['birthday']) && $userArray['birthday']) {
+            if (strpos($userArray['birthday'], '/') !== false) {
+                $userArray['age'] = $this->caculateAgeFromBirthday($userArray['birthday']);    
+            }            
+        }
+        
+        return $userArray;
+    }
 
-	/**
+    public function facebookPhotos() {
+        $input = Input::all();
+        $validator = Validator::make( $input, User::getFBPhotosRules() );
+
+		if ( $validator->passes() ){
+            $facebook = new FacebookWrapper();
+			$facebook->loginAsUser( $input['access_token'] );
+
+            /*
+             * Scope email => email
+             * Scope user_photos => select 4 images
+             * Scope user_work_history => for work info
+             * Scope user_education_history => for education info
+             * Scope user_about_me => for about info
+             * Scope user_birthday => for birthday and age
+             * me?fields=photos.limit(4){images,name}
+             */
+            $fields = 'photos.limit(10){images,name}';
+			$profile = $facebook->getMe(array(
+                'fields' => $fields)
+            );
+            
+			if ( is_array($profile) && isset($profile['error']) )
+				return json_encode($profile);
+
+			Log::info( json_encode( $profile->asArray() ) );
+
+			return ApiResponse::json($profile->asArray()['photos']);
+            
+        } else {
+			return ApiResponse::validation($validator);		
+        }
+    }
+    
+    /**
 	 *	Authenticate a user based on Facebook access token. If the email address from facebook is already in the database, 
 	 *	the facebook user id will be added. 
 	 *	If not, a new user will be created with a random password and user info from facebook.
@@ -91,8 +154,20 @@ class UserController extends BaseController {
 			$facebook = new FacebookWrapper();
 			$facebook->loginAsUser( $input['access_token'] );
 
-			$profile = $facebook->getMe();
-
+            /*
+             * Scope email => email
+             * Scope user_photos => select 4 images
+             * Scope user_work_history => for work info
+             * Scope user_education_history => for education info
+             * Scope user_about_me => for about info
+             * Scope user_birthday => for birthday and age
+             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender
+             */
+            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender';
+			$profile = $facebook->getMe(array(
+                'fields' => $fields)
+            );
+            
 			if ( is_array($profile) && isset($profile['error']) )
 				return json_encode($profile);
 
@@ -110,11 +185,57 @@ class UserController extends BaseController {
 				$user->lastname = $profile->getLastName();
 				$user->email = $profile->getProperty('email');
 				$user->password = Hash::make( uniqid() );
-			}
-				
+                
+                if (!empty($profile->getName())) {
+                    $user->name = $profile->getName();    
+                }
+                
+                if (!empty($profile->getMiddleName())) {
+                    $user->middlename = $profile->getMiddleName();
+                }
+                
+                $user->profile_image = 'http://graph.facebook.com/' . $profile->getId() . '/picture';
+                
+                $workArray = $profile->getProperty('work')->asArray();                
+                $lastWorkObject = null;
+                if (is_array($workArray) && count($workArray) > 0) {
+                    $lastWorkObject = array_values($workArray)[0]; 
+                }
+                if (!empty($lastWorkObject)) {
+                    $user->work = $lastWorkObject->employer->name;
+                }
+                
+                $educationArray = $profile->getProperty('education')->asArray();
+                $lastEducationObject = null;
+                if (is_array($educationArray) && count($educationArray) > 0) {
+                    foreach($educationArray as $key => $singleObject) {
+                        if($singleObject->type == 'High School') {
+                            unset($educationArray[$key]);
+                        }
+                    }
+                    $lastEducationObject = array_values($educationArray)[0]; 
+                }
+                
+                if (!empty($lastEducationObject)) {
+                    $user->education = $lastEducationObject->school->name;
+                }
+                
+                if (!empty($profile->getProperty('birthday'))) {
+                    $user->birthday = $profile->getProperty('birthday');
+                }
+                
+                if (!empty($profile->getProperty('about'))) {
+                    $user->about = $profile->getProperty('about');
+                }
+                
+                if (!empty($profile->getGender())) {
+                    $user->gender = $profile->getGender();
+                }
+            }                
+
 			$user->facebook_id = $profile->getId();
 			$user->save();
-
+            
 			$device_id = Input::has('device_id')? $input['device_id'] : '';
 			$device_type = Input::has('device_type')? $input['device_type'] : '';
 			$device_token = Input::has('device_token')? $input['device_token'] : '';
@@ -124,8 +245,11 @@ class UserController extends BaseController {
 			Log::info('<!> Device Token Received : '. $device_token .' - Device ID Received : '. $device_id .' for user id: '.$token->user_id);
 			Log::info('<!> FACEBOOK Logged : '.$token->user_id.' on '.$token->device_os.'['.$token->device_id.'] with token '.$token->token);
 
-			$token = $token->toArray();
-			$token['user'] = $user->toArray();
+			$token = $token->toArray();                        
+            
+            $userArray = $this->postProcessUserArray($user);            
+            
+			$token['user'] = $userArray;
 
 			Log::info( json_encode($token) );
 			

@@ -26,6 +26,8 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
 	protected static $createRules = array(
 		'firstname'				=>	'required',
 		'lastname'				=>	'required',
+        'name'                  =>	'required',
+        'middlename'            =>	'required',
 		'password'				=>	'required|min:6|confirmed',
 		'password_confirmation'	=>	'required|min:6',
 		'email'					=>	'required|email|unique:users,email',
@@ -43,8 +45,12 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
 		'device_type'			=>	'required',
 		// 'device_token'			=>	'required',
 	);
+    
+    protected static $fb_photosRules = array (
+        'access_token'			=>	'required'
+    );
 
-	protected static $forgotRules = array(
+    protected static $forgotRules = array(
 		'email'			=>	'required|email|exists:users',
 	);
 
@@ -58,6 +64,8 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
 	public static function getAuthFBRules() {		return self::$fb_authRules; }
 	public static function getAuthRules() {			return self::$authRules; }
 
+    public static function getFBPhotosRules() {		return self::$fb_photosRules; }
+    
 	public static function getForgotRules() {		return self::$forgotRules; }
 	public static function getResetRules() {		return self::$resetRules; }
 

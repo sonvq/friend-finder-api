@@ -17,9 +17,17 @@ class CreateUsersTable extends Migration {
             $table->increments('_id');
             $table->string('email');
             $table->string('firstname');
+            $table->string('name')->nullable();
+            $table->string('middlename')->nullable();
+            $table->string('profile_image')->nullable();
+            $table->string('work')->nullable();
+            $table->string('education')->nullable();
             $table->string('lastname');
             $table->string('password');
             $table->string('facebook_id')->nullable();
+            $table->string('about')->nullable();
+            $table->string('birthday')->nullable();
+            $table->string('gender')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -51,6 +51,8 @@ Route::group(array('prefix' => 'v1'), function(){
     Route::post('users/auth',           array('as' => 'v1.users.auth',          'uses' => 'UserController@authenticate') );
     Route::post('users/auth/facebook',  array('as' => 'v1.users.auth.facebook', 'uses' => 'UserController@authenticateFacebook') );
 
+    Route::get('users/facebook/photos',  array('as' => 'v1.users.facebook.photos', 'uses' => 'UserController@facebookPhotos') );
+    
     Route::resource('users', 'UserController', array('only' => array('index', 'store')) );
 
     //	user needs to have a registered and active token
