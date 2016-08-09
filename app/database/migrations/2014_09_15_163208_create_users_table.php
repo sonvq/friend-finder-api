@@ -28,6 +28,8 @@ class CreateUsersTable extends Migration {
             $table->string('about')->nullable();
             $table->string('birthday')->nullable();
             $table->string('gender')->nullable();
+            $table->string('longitude')->nullable();
+            $table->string('latitude')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

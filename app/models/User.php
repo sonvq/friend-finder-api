@@ -32,6 +32,10 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
 		'password_confirmation'	=>	'required|min:6',
 		'email'					=>	'required|email|unique:users,email',
 	);
+    protected static $updateRules = array(
+		'latitude'				=>	['regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/'],
+		'longitude'				=>	['regex:/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/'],        
+	);
 	protected static $authRules = array(
 		'email'					=>	'required|email',
 		'password'				=>	'required',
@@ -61,6 +65,7 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
 	);
 
 	public static function getCreateRules() {		return self::$createRules; }
+    public static function getUpdateRules() {		return self::$updateRules; }
 	public static function getAuthFBRules() {		return self::$fb_authRules; }
 	public static function getAuthRules() {			return self::$authRules; }
 

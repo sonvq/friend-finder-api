@@ -59,7 +59,8 @@ Route::group(array('prefix' => 'v1'), function(){
     Route::group(array('before' => 'logged_in'), function() {
 
         Route::get('users/sessions',    array('as' => 'v1.users.sessions',      'uses' => 'UserController@sessions') );
-
+        Route::resource('users', 'UserController', array('only' => array('update')) );
+        
         Route::group(array('prefix' => 'users/{users}'), function() {
 
             Route::get('show',          array('as' => 'v1.users.show',      'uses' => 'UserController@show') );

@@ -37,6 +37,36 @@ class UserController extends BaseController {
 
 		return ApiResponse::json($user);
 	}
+    
+    public function update($user) {
+
+		$input_token = Input::get('token');
+		$token = Token::where('key', '=', $input_token)->first();
+
+		if ( empty($token) ) return ApiResponse::json('No active session found.');
+
+		if ( $token->user_id !== $user->_id ) return ApiResponse::errorForbidden('You are not allowed to update');
+        
+		$input = Input::all();
+
+		$validator = Validator::make( $input, User::getUpdateRules() );
+
+		if ( $validator->passes() ) {
+			
+			$user->longitude            = Input::has('longitude')? $input['longitude'] : null;
+			$user->latitude 			= Input::has('latitude')? $input['latitude'] : null;
+
+			if ( !$user->save() )
+				$user = ApiResponse::errorInternal('An error occured. Please, try again.');
+
+		}
+		else {
+			return ApiResponse::validation($validator);
+		}
+		Log::info('<!> Updated : '.$user);
+
+		return ApiResponse::json($user);
+	}
 
 	/**
 	 *	Authenticate a registered user, with its email and password
@@ -131,8 +161,12 @@ class UserController extends BaseController {
 				return json_encode($profile);
 
 			Log::info( json_encode( $profile->asArray() ) );
-
-			return ApiResponse::json($profile->asArray()['photos']);
+            if (isset($profile->asArray()['photos'])) {
+                return ApiResponse::json($profile->asArray()['photos']);    
+            } else {
+                return ApiResponse::errorNotFound('Sorry, no images found');   
+            }
+			
             
         } else {
 			return ApiResponse::validation($validator);		
@@ -186,13 +220,9 @@ class UserController extends BaseController {
 				$user->email = $profile->getProperty('email');
 				$user->password = Hash::make( uniqid() );
                 
-                if (!empty($profile->getName())) {
-                    $user->name = $profile->getName();    
-                }
+                $user->name = !empty($profile->getName()) ? $profile->getName() : null;
                 
-                if (!empty($profile->getMiddleName())) {
-                    $user->middlename = $profile->getMiddleName();
-                }
+                $user->middlename = !empty($profile->getMiddleName()) ? $profile->getMiddleName() : null;
                 
                 $user->profile_image = 'http://graph.facebook.com/' . $profile->getId() . '/picture';
                 
@@ -201,36 +231,41 @@ class UserController extends BaseController {
                 if (is_array($workArray) && count($workArray) > 0) {
                     $lastWorkObject = array_values($workArray)[0]; 
                 }
-                if (!empty($lastWorkObject)) {
-                    $user->work = $lastWorkObject->employer->name;
-                }
+
+                $user->work = !empty($lastWorkObject) ? $lastWorkObject->employer->name : null;
                 
                 $educationArray = $profile->getProperty('education')->asArray();
-                $lastEducationObject = null;
+                
+                $choosedHighschool = false;
+                $choosedCollege = false;
+                $highschool = '';
+                $college = '';
                 if (is_array($educationArray) && count($educationArray) > 0) {
+                    // Has at least highschool or college                    
                     foreach($educationArray as $key => $singleObject) {
-                        if($singleObject->type == 'High School') {
-                            unset($educationArray[$key]);
+                        if (($singleObject->type == 'High School') && ($choosedHighschool == false)) {
+                            $highschool = $singleObject->school->name;
+                            $choosedHighschool = true;
+                        }
+                        if (($singleObject->type == 'College') && ($choosedCollege == false)) {
+                            $college = $singleObject->school->name;
+                            $choosedCollege = true;
                         }
                     }
-                    $lastEducationObject = array_values($educationArray)[0]; 
                 }
                 
-                if (!empty($lastEducationObject)) {
-                    $user->education = $lastEducationObject->school->name;
+                if ($choosedCollege == true) {
+                    $user->education = $college;
+                } else {
+                    $user->education = ($choosedHighschool == true) ? $highschool : null;                    
                 }
                 
-                if (!empty($profile->getProperty('birthday'))) {
-                    $user->birthday = $profile->getProperty('birthday');
-                }
+                $user->birthday = (!empty($profile->getProperty('birthday'))) ? $profile->getProperty('birthday') : null;                                
+                $user->about = (!empty($profile->getProperty('about'))) ? $profile->getProperty('about') : null;
+                $user->gender = (!empty($profile->getGender())) ? $profile->getGender() : null;
                 
-                if (!empty($profile->getProperty('about'))) {
-                    $user->about = $profile->getProperty('about');
-                }
-                
-                if (!empty($profile->getGender())) {
-                    $user->gender = $profile->getGender();
-                }
+                $user->longitude = null;
+                $user->latitude = null;
             }                
 
 			$user->facebook_id = $profile->getId();
@@ -369,8 +404,8 @@ class UserController extends BaseController {
 	 *	Show all active sessions for the specified user, no access right check
 	 *	@param user User
 	 */
-	public function show($user) {
-		$user->sessions;
+	public function show($user) {        
+//		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
 		return $user;
 	}
