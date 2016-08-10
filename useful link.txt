@@ -17,7 +17,11 @@ Account login:
 check Gmail - document pickmefirst
 
 commands
+// Recreate table, empty data
 $ php artisan migrate:refresh
+
+// Create migration table
+$ php artisan migrate:make create_photos_table
 
 http://graph.facebook.com/1238052666218464/picture?type=square
 http://graph.facebook.com/1238052666218464/picture?type=small

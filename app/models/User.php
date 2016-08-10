@@ -85,6 +85,10 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
     public function sessions() {
     	return $this->hasMany('Token');
     }
+    
+    public function photos() {
+    	return $this->hasMany('Photo');
+    }
 
 	/**
 	 * Generate a token to authenticate a user

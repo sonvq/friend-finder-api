@@ -195,9 +195,9 @@ class UserController extends BaseController {
              * Scope user_education_history => for education info
              * Scope user_about_me => for about info
              * Scope user_birthday => for birthday and age
-             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender
+             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id}
              */
-            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender';
+            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id}';
 			$profile = $facebook->getMe(array(
                 'fields' => $fields)
             );
@@ -266,11 +266,54 @@ class UserController extends BaseController {
                 
                 $user->longitude = null;
                 $user->latitude = null;
-            }                
-
-			$user->facebook_id = $profile->getId();
-			$user->save();
+                        
+                $user->facebook_id = $profile->getId();
+                $user->save();            
             
+                // Get id of profile picture album
+                $profilePictureId = '';
+                $albumArray = $profile->getProperty('albums')->asArray();
+                if (is_array($albumArray) && count($albumArray) > 0) {
+                    $dataAlbumArray = $albumArray['data'];
+                    if (is_array($dataAlbumArray) && count($dataAlbumArray) > 0) {
+                        foreach ($dataAlbumArray as $singleAlbum) {
+                            if ($singleAlbum->type == "profile" && $singleAlbum->name == 'Profile Pictures') {
+                                $profilePictureId = $singleAlbum->id;
+                            }
+                        }
+                    }
+                }
+                
+                // If successfully get profile picture album id, get 4 photos
+                if (!empty($profilePictureId)) {
+                    $fields = 'photos.limit(4){id,link}';
+                    $profilePhotos = $facebook->makeRequest('GET', '/' . $profilePictureId, array(
+                        'fields' => $fields)
+                    )->execute()->getGraphObject();
+
+                    if (is_array($profilePhotos) && isset($profilePhotos['error']))
+                        return json_encode($profilePhotos);
+
+                    Log::info(json_encode($profile->asArray()));
+
+                    $profilePhotosArray = $profilePhotos->getProperty('photos')->asArray();
+
+                    if (is_array($profilePhotosArray) && count($profilePhotosArray) > 0) {
+                        $profilePhotoData = $profilePhotosArray['data'];
+
+                        if (is_array($profilePhotoData) && count($profilePhotoData) > 0) {
+                            foreach ($profilePhotoData as $singleProfilePhoto) {
+                                $photo = new Photo();
+                                $photo->url = $singleProfilePhoto->link;
+                                $photo->user_id = $user->_id;
+                                $photo->save();
+                            }
+                        }
+                    }
+                }                
+            }                
+            $user->photos;
+
 			$device_id = Input::has('device_id')? $input['device_id'] : '';
 			$device_type = Input::has('device_type')? $input['device_type'] : '';
 			$device_token = Input::has('device_token')? $input['device_token'] : '';

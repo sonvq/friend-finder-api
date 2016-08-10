@@ -21,6 +21,11 @@ class CreateRelationForeignkeys extends Migration {
         {
             $table->foreign('user_id')->references('_id')->on('users');
         });
+        
+        Schema::table('photos', function($table)
+        {
+            $table->foreign('user_id')->references('_id')->on('users');
+        });
 	}
 
 	/**
@@ -38,6 +43,11 @@ class CreateRelationForeignkeys extends Migration {
         Schema::table('tokens', function($table)
         {
             $table->dropForeign('tokens_user_id_foreign');
+        });
+        
+        Schema::table('photos', function($table)
+        {
+            $table->dropForeign('photos_user_id_foreign');
         });
 	}
 
