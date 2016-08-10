@@ -286,7 +286,7 @@ class UserController extends BaseController {
                 
                 // If successfully get profile picture album id, get 4 photos
                 if (!empty($profilePictureId)) {
-                    $fields = 'photos.limit(4){id,link}';
+                    $fields = 'photos.limit(4){id,images}';
                     $profilePhotos = $facebook->makeRequest('GET', '/' . $profilePictureId, array(
                         'fields' => $fields)
                     )->execute()->getGraphObject();
@@ -303,8 +303,10 @@ class UserController extends BaseController {
 
                         if (is_array($profilePhotoData) && count($profilePhotoData) > 0) {
                             foreach ($profilePhotoData as $singleProfilePhoto) {
+                                $allImageLinks = $singleProfilePhoto->images;
+                                $chosenImageLinkObject = $allImageLinks[0]; // the largest size
                                 $photo = new Photo();
-                                $photo->url = $singleProfilePhoto->link;
+                                $photo->url = $chosenImageLinkObject->source;
                                 $photo->user_id = $user->_id;
                                 $photo->save();
                             }
