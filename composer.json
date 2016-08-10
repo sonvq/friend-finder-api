@@ -9,7 +9,8 @@
 		"jenssegers/mongodb-session": "*",
 		"intervention/image": "1.*",
 		"facebook/php-sdk-v4" : "~4.0.0",
-		"iron-io/iron_mq" : "*"
+		"iron-io/iron_mq" : "*",
+		"cosenary/instagram": "^2.3"
 	},
 	"require-dev": {
         "way/generators": "2.*",

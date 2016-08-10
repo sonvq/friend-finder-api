@@ -314,7 +314,7 @@ class UserController extends BaseController {
                     }
                 }                
             }                
-            $user->photos;
+            $user->photos->toArray();
 
 			$device_id = Input::has('device_id')? $input['device_id'] : '';
 			$device_type = Input::has('device_type')? $input['device_type'] : '';

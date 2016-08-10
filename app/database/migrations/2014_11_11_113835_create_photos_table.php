@@ -16,7 +16,7 @@ class CreatePhotosTable extends Migration {
             $table->integer('user_id')->unsigned()->index();
             $table->string('url');
             $table->tinyInteger('is_removed')->default(0);
-            $table->string('is_profile')->default(0);
+            $table->tinyInteger('is_profile')->default(0);
             $table->timestamps();
         });
     }
