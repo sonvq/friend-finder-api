@@ -281,7 +281,12 @@ class UserController extends BaseController {
             
                 // Get id of profile picture album
                 $profilePictureId = '';
-                $albumArray = $profile->getProperty('albums')->asArray();
+                
+                $albumArray = array();
+                if (!empty($profile->getProperty('albums'))) {
+                    $albumArray = $profile->getProperty('albums')->asArray();
+                }
+                
                 if (is_array($albumArray) && count($albumArray) > 0) {
                     $dataAlbumArray = $albumArray['data'];
                     if (is_array($dataAlbumArray) && count($dataAlbumArray) > 0) {
