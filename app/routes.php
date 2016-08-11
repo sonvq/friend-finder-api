@@ -53,14 +53,18 @@ Route::group(array('prefix' => 'v1'), function(){
 
     Route::get('users/facebook/photos',  array('as' => 'v1.users.facebook.photos', 'uses' => 'UserController@facebookPhotos') );
     
-    Route::resource('users', 'UserController', array('only' => array('index', 'store')) );
+    Route::resource('users', 'UserController', array('only' => array('store')) );
 
     //	user needs to have a registered and active token
     Route::group(array('before' => 'logged_in'), function() {
 
-        Route::get('users/sessions',    array('as' => 'v1.users.sessions',      'uses' => 'UserController@sessions') );
-        Route::resource('users', 'UserController', array('only' => array('update')) );
+        Route::resource('event_types', 'EventTypesController', array('only' => array('index')) );
+        Route::group(array('prefix' => 'event_types/{event_type}'), function() {
+            Route::get('show',          array('as' => 'v1.event_types.show',      'uses' => 'EventTypesController@show') );
+        });
         
+        Route::get('users/sessions',    array('as' => 'v1.users.sessions',      'uses' => 'UserController@sessions') );
+        Route::resource('users', 'UserController', array('only' => array('update', 'index')) );        
         Route::group(array('prefix' => 'users/{users}'), function() {
 
             Route::get('show',          array('as' => 'v1.users.show',      'uses' => 'UserController@show') );
