@@ -33,7 +33,8 @@ return array(
 	|
 	*/
 
-	'url' => 'http://localhost',
+	'url' => 'http://pickmefirst.co',
+    'public_url' => 'http://pickmefirst.co/public',
 
 	/*
 	|--------------------------------------------------------------------------

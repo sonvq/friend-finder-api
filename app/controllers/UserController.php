@@ -226,7 +226,12 @@ class UserController extends BaseController {
                 
                 $user->profile_image = 'http://graph.facebook.com/' . $profile->getId() . '/picture';
                 
-                $workArray = $profile->getProperty('work')->asArray();                
+                $workArray = array();
+                
+                if (!empty($profile->getProperty('work'))) {
+                    $workArray = $profile->getProperty('work')->asArray();    
+                }
+                                
                 $lastWorkObject = null;
                 if (is_array($workArray) && count($workArray) > 0) {
                     $lastWorkObject = array_values($workArray)[0]; 
@@ -234,7 +239,11 @@ class UserController extends BaseController {
 
                 $user->work = !empty($lastWorkObject) ? $lastWorkObject->employer->name : null;
                 
-                $educationArray = $profile->getProperty('education')->asArray();
+                $educationArray = array();
+                
+                if (!empty($profile->getProperty('education'))) {
+                    $educationArray = $profile->getProperty('education')->asArray();
+                }
                 
                 $choosedHighschool = false;
                 $choosedCollege = false;

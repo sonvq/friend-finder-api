@@ -3,8 +3,9 @@
 class EventTypesTableSeeder extends Seeder {
 
     public function run() {
-        DB::table('event_types')->delete();
-        $folderImagePath = public_path() . '/event_types_icon/';
+        DB::table('event_types')->truncate();
+        $publicPath = Config::get('app.public_url');
+        $folderImagePath = $publicPath . '/event_types_icon/';
 
         $event1 = EventType::create(array('name'    => 'Go to Beach', 'icon'    => $folderImagePath . 'icon-go-to-beach.png'));
         
