@@ -3,6 +3,7 @@
 class EventTypesTableSeeder extends Seeder {
 
     public function run() {
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0'); 
         DB::table('event_types')->truncate();
         $publicPath = Config::get('app.public_url');
         $folderImagePath = $publicPath . '/event_types_icon/';
