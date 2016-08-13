@@ -43,9 +43,13 @@ class UserController extends BaseController {
 		$input_token = Input::get('token');
 		$token = Token::where('key', '=', $input_token)->first();
 
-		if ( empty($token) ) return ApiResponse::json('No active session found.');
+		if ( empty($token) ) {
+            return ApiResponse::errorUnauthorized(Helper::failResponseFormat (array("No active session found.")));
+        }
 
-		if ( $token->user_id !== $user->_id ) return ApiResponse::errorForbidden('You are not allowed to update');
+		if ( $token->user_id !== $user->_id ) {
+            return ApiResponse::errorForbidden(Helper::failResponseFormat(array('You are not allowed to update')));
+        }
         
 		$input = Input::all();
 
@@ -479,7 +483,7 @@ class UserController extends BaseController {
 	public function show($user) {        
 //		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
-		return $user;
+		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
 
 	public function missingMethod( $parameters = array() )
