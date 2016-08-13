@@ -5,7 +5,7 @@ class EventTypesController extends BaseController {
 	public $restful = true;
 
 	public function index() {
-		return EventType::all();
+		return ApiResponse::json(Helper::successResponseFormat(null, EventType::all()));
 	}
 	
 	/**
@@ -15,16 +15,16 @@ class EventTypesController extends BaseController {
 	public function show($event_type) {  
         $eventTypeObject = EventType::find($event_type);
         if (empty($eventTypeObject)) {
-            return ApiResponse::errorNotFound('Sorry, no record found');
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no record found')));
         }
 //		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
-		return $eventTypeObject->toArray();
+		return ApiResponse::json(Helper::successResponseFormat(null, $eventTypeObject->toArray()));
 	}
 
 	public function missingMethod( $parameters = array() )
 	{
-	    return ApiResponse::errorNotFound('Sorry, no method found');
+	    return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no method found')));
 	}
 
 }

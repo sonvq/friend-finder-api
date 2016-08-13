@@ -5,7 +5,7 @@ class UserController extends BaseController {
 	public $restful = true;
 
 	public function index() {
-		return User::all();
+		return ApiResponse::json(Helper::successResponseFormat(null, User::all()));
 	}
 	
 	/**
@@ -61,11 +61,12 @@ class UserController extends BaseController {
 
 		}
 		else {
-			return ApiResponse::validation($validator);
+			$error = Helper::getErrorMessageValidation($validator);
+			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
 		Log::info('<!> Updated : '.$user);
 
-		return ApiResponse::json($user);
+		return ApiResponse::json(Helper::successResponseFormat(null, $user));
 	}
 
 	/**
@@ -157,19 +158,22 @@ class UserController extends BaseController {
                 'fields' => $fields)
             );
             
-			if ( is_array($profile) && isset($profile['error']) )
-				return json_encode($profile);
-
+			if ( is_array($profile) && isset($profile['error']) ) {
+				$error = array($profile['error']);
+                return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+            }
+            
 			Log::info( json_encode( $profile->asArray() ) );
             if (isset($profile->asArray()['photos'])) {
-                return ApiResponse::json($profile->asArray()['photos']);    
+                return ApiResponse::json(Helper::successResponseFormat(null, $profile->asArray()['photos']));    
             } else {
-                return ApiResponse::errorNotFound('Sorry, no images found');   
+                return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no images found')));   
             }
 			
             
         } else {
-			return ApiResponse::validation($validator);		
+            $error = Helper::getErrorMessageValidation($validator);
+			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
         }
     }
     
@@ -202,8 +206,10 @@ class UserController extends BaseController {
                 'fields' => $fields)
             );
             
-			if ( is_array($profile) && isset($profile['error']) )
-				return json_encode($profile);
+			if ( is_array($profile) && isset($profile['error']) ) {
+                $error = array($profile['error']);
+                return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+            }
 
 			Log::info( json_encode( $profile->asArray() ) );
 
@@ -305,8 +311,10 @@ class UserController extends BaseController {
                         'fields' => $fields)
                     )->execute()->getGraphObject();
 
-                    if (is_array($profilePhotos) && isset($profilePhotos['error']))
-                        return json_encode($profilePhotos);
+                    if (is_array($profilePhotos) && isset($profilePhotos['error'])) {
+                        $error = array($profilePhotos['error']);
+                        return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+                    }
 
                     Log::info(json_encode($profile->asArray()));
 
@@ -347,10 +355,11 @@ class UserController extends BaseController {
 
 			Log::info( json_encode($token) );
 			
-			return ApiResponse::json($token);
+			return ApiResponse::json(Helper::successResponseFormat(null, $token));
 		}
 		else {
-			return ApiResponse::validation($validator);
+            $error = Helper::getErrorMessageValidation($validator);
+			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
 	}
 
@@ -383,15 +392,19 @@ class UserController extends BaseController {
 	 */
 	public function sessions() {
 
-		if ( !Input::has('token') ) return ApiResponse::json('No token given.');
+		if ( !Input::has('token') ) {
+            return ApiResponse::errorUnauthorized(Helper::failResponseFormat (array("No token given.")));
+        }
 
 		$user = Token::userFor ( Input::get('token') );
 
-		if ( empty($user) ) return ApiResponse::json('User not found.');
+		if ( empty($user) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));   
+        }
 
 		$user->sessions;
 
-		return ApiResponse::json( $user );
+		return ApiResponse::json(Helper::successResponseFormat(null, $user));
 	}
 
 	/**
@@ -471,7 +484,7 @@ class UserController extends BaseController {
 
 	public function missingMethod( $parameters = array() )
 	{
-	    return ApiResponse::errorNotFound('Sorry, no method found');
+	    return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no method found')));   
 	}
 
 }

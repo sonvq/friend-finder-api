@@ -106,6 +106,10 @@ class ApiResponse extends Response {
 	public static function errorInternal( $data=array(), $headers=array() ){
 		return self::json( $data, '500', $headers );
 	}
+            
+    public static function errorValidation( $data=array(), $headers=array()){        
+		return self::json( $data, '412', $headers );
+	}
 
 	/**
 	 *	@param array $array Message to format

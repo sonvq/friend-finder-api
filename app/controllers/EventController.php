@@ -13,7 +13,9 @@ class EventController extends BaseController {
 		$event = '';
         
         $user = Token::userFor ( Input::get('token') );
-        if ( empty($user) ) return ApiResponse::json('User not found.');   
+        if ( empty($user) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
+        }
 
         Validator::extend('greater_than', function($attribute, $value, $parameters)
         {
@@ -81,13 +83,14 @@ class EventController extends BaseController {
 
 		}
 		else {
-			return ApiResponse::validation($validator);
+			$error = Helper::getErrorMessageValidation($validator);
+			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
 		Log::info('<!> Created : '.$event);
         $returnEvent = EventModel::find($event->_id);
         $returnEvent->user;
         
-		return ApiResponse::json($returnEvent->toArray());
+		return ApiResponse::json(Helper::successResponseFormat(null, $returnEvent->toArray()));
     }
 	/**
 	 *	
@@ -105,7 +108,7 @@ class EventController extends BaseController {
 
 	public function missingMethod( $parameters = array() )
 	{
-	    return ApiResponse::errorNotFound('Sorry, no method found');
+	    return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no method found')));
 	}
 
 }
