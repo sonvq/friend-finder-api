@@ -21,7 +21,8 @@ class EventModel extends SmartLoquent {
         'age_start'     => 'required|integer|min:18|max:55',
         'age_end'       => 'required|integer|min:18|max:55|greater_than:age_start',
         'gender'        => 'required|in:male,female,both',
-        'event_type'    => 'required|integer'
+        'event_type'    => 'required|integer|valid_event_type',
+        'created_at'    => 'no_exist_event_running'
     );
 
     public static function getCreateRules() {

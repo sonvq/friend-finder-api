@@ -11,6 +11,9 @@ class EventController extends BaseController {
     public function store() {
         $input = Input::all();
 		$event = '';
+        
+        $user = Token::userFor ( Input::get('token') );
+        if ( empty($user) ) return ApiResponse::json('User not found.');   
 
         Validator::extend('greater_than', function($attribute, $value, $parameters)
         {
@@ -22,26 +25,52 @@ class EventController extends BaseController {
         Validator::replacer('greater_than', function($message, $attribute, $rule, $params) {
             return str_replace('_', ' ' , 'The '. $attribute .' must be greater than the ' .$params[0]);
         });
+        
+        Validator::extend('valid_event_type', function($attribute, $value, $parameters)
+        {
+            $eventTypeObject = EventType::find($value);
+            if (empty($eventTypeObject)) {
+                return false;
+            }
+            return true;            
+        });
+        
+        Validator::replacer('valid_event_type', function($message, $attribute, $rule, $params) {
+            return str_replace('_', ' ' , 'The '. $attribute .' does not exist');
+        });
+        
+        Validator::extend('no_exist_event_running', function($attribute, $value, $parameters)
+        {
+            $user = Token::userFor ( Input::get('token') );
+            
+            $eventObjects =  EventModel::whereRaw('user_id = ? and end_date >= ?', 
+                    array($user->_id, $value))->get();         
+            if (count($eventObjects) > 0) {
+                return false;
+            }
+            return true;
+        });
+        
+        Validator::replacer('no_exist_event_running', function($message, $attribute, $rule, $params) {
+            return 'Only one active event are allowed at a time';
+        });
+        
 
+        $input['created_at'] = date("Y-m-d H:i:s");
+        $input['user_id'] = $user->_id;
 		$validator = Validator::make( $input, EventModel::getCreateRules() );
 
 		if ( $validator->passes() ) {
 
-			$event = new EventModel();
-            $user = Token::userFor ( Input::get('token') );
-            if ( empty($user) ) return ApiResponse::json('User not found.');
-            
-            $event_type = EventType::find($input['event_type']);
-            if(empty($event_type)) {
-                return ApiResponse::errorNotFound('Event Type does not exist');
-            }
+			$event = new EventModel();                     
         
-			$event->user_id              = $user->_id;
-			$event->gender               = $input['gender'];
-			$event->period               = $input['period'];
-            $event->age_start            = $input['age_start'];
-            $event->age_end              = $input['age_end'];            
-            $event->event_type           = $input['event_type'];  
+			$event->user_id             = $user->_id;
+			$event->gender              = $input['gender'];
+			$event->period              = $input['period'];
+            $event->age_start           = $input['age_start'];
+            $event->age_end             = $input['age_end'];            
+            $event->event_type          = $input['event_type'];  
+            $event->created_at          = $input['created_at'];
             
             $plusMinutes = '+' . $event->period * 60;            
             $event->end_date = date("Y-m-d H:i:s", strtotime("$plusMinutes minutes"));
