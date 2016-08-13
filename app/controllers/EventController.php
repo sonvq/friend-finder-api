@@ -5,7 +5,26 @@ class EventController extends BaseController {
 	public $restful = true;
 
 	public function index() {
-		return EventModel::all();
+        
+        $query = $this->processInput();               
+
+        $result = EventModel::getAll($query['where'], $query['sort'], $query['limit'], $query['offset']);
+        
+        // TODO: optimize
+        foreach ($result as $id=>$object) {
+            if(!empty($query['fields'])) {
+                foreach ($object as $key=>$value) {
+                    if(in_array($key, $query['fields'])) {
+                        continue;
+                    } else {
+                        unset($object->$key);
+                    }
+                }
+            }
+        }
+
+        return ApiResponse::json(Helper::successResponseFormat(null, $result));
+
 	}
 	
     public function store() {
