@@ -292,63 +292,9 @@ class UserController extends BaseController {
                         
                 $user->facebook_id = $profile->getId();
                 $user->save();            
-            
-                $profileImagepath = '/profile_image/';
-                
-                if (!is_dir(public_path() . $profileImagepath)) {
-                    mkdir(public_path() . $profileImagepath, 0777, true);
-                }
-                
-                $userProfileImagePath = $profileImagepath . 'user_' . $user->_id . '/';
-                if (!is_dir(public_path() . $userProfileImagePath)) {
-                    mkdir(public_path() . $userProfileImagePath, 0777, true);
-                }
-                
-                // Remove old files                
-                $files = glob(public_path() . $userProfileImagePath . '*'); // get all file names                
-                foreach ($files as $file) { // iterate files
-                    if (is_file($file))
-                        unlink($file); // delete file
-                }
-                
-                $profileImageFbLink = 'http://graph.facebook.com/' . $profile->getId() . '/picture?width=9999';
-                $profileImageSaveLink = $userProfileImagePath . 'profile_image_' . time() . '.jpg';
-                $arrContextOptions = array(
-                    "ssl" => array(
-                        "verify_peer" => false,
-                        "verify_peer_name" => false,
-                    ),
-                );
-                                 
-                $profileImageSaveLinkFull = public_path() . $profileImageSaveLink;
-                file_put_contents($profileImageSaveLinkFull, file_get_contents($profileImageFbLink, false, stream_context_create($arrContextOptions)));
-                
-                $downloadedImageSize = getimagesize($profileImageSaveLinkFull);
-                
-                if ($downloadedImageSize[0] > 1200 || $downloadedImageSize[1] > 1200) {
-                    try {
-                        $img = new SimpleImage($profileImageSaveLinkFull);
-                        $img->best_fit(1200, 1200)->save($profileImageSaveLinkFull);
-                    } catch(Exception $e) {
-                        echo 'Error: ' . $e->getMessage();
-                    }
-                }
-                
-                $profileImageThumb = $userProfileImagePath . 'profile_image_thumb_' . time() . '.jpg';
-                $profileImageThumbFull = public_path() . $profileImageThumb;
-                // Save thumbnail image
-                try {
-                    $img = new SimpleImage($profileImageSaveLinkFull);
-                    $img->best_fit(300, 300)->save($profileImageThumbFull);
-                } catch(Exception $e) {
-                    echo 'Error: ' . $e->getMessage();
-                }
-                
-                // get and set profile picture
-                $user->profile_image = Config::get('app.public_url') . $profileImageSaveLink;
-                $user->profile_thumb = Config::get('app.public_url') . $profileImageThumb;
-                
-                $user->save();
+                      
+                $imageLink = 'http://graph.facebook.com/' . $profile->getId() . '/picture?width=9999';
+                $this->getAndCropImageFromLink($user, $imageLink, 1, true);
                 
                 // Get id of profile picture album
                 $profilePictureId = '';
@@ -392,10 +338,8 @@ class UserController extends BaseController {
                             foreach ($profilePhotoData as $singleProfilePhoto) {
                                 $allImageLinks = $singleProfilePhoto->images;
                                 $chosenImageLinkObject = $allImageLinks[0]; // the largest size
-                                $photo = new Photo();
-                                $photo->url = $chosenImageLinkObject->source;
-                                $photo->user_id = $user->_id;
-                                $photo->save();
+                                $imageLink = $chosenImageLinkObject->source;
+                                $this->getAndCropImageFromLink($user, $imageLink, 0);                                
                             }
                         }
                     }
@@ -425,8 +369,72 @@ class UserController extends BaseController {
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
 	}
+    
+    protected function getAndCropImageFromLink ($user, $imageLink, $is_profile = 0, $removeOld = false) {
+        $profileImagepath = '/profile_image/';
 
-	/**
+        if (!is_dir(public_path() . $profileImagepath)) {
+            mkdir(public_path() . $profileImagepath, 0777, true);
+        }
+
+        $userProfileImagePath = $profileImagepath . 'user_' . $user->_id . '/';
+        if (!is_dir(public_path() . $userProfileImagePath)) {
+            mkdir(public_path() . $userProfileImagePath, 0777, true);
+        }
+
+        if ($removeOld) {
+            // Remove old files                
+            $files = glob(public_path() . $userProfileImagePath . '*'); // get all file names                
+            foreach ($files as $file) { // iterate files
+                if (is_file($file))
+                    unlink($file); // delete file
+            }
+        }
+
+        $profileImageSaveLink = $userProfileImagePath . 'image_' . uniqid() . '_' . time() . '.jpg';
+        $arrContextOptions = array(
+            "ssl" => array(
+                "verify_peer" => false,
+                "verify_peer_name" => false,
+            ),
+        );
+
+        $profileImageSaveLinkFull = public_path() . $profileImageSaveLink;
+        file_put_contents($profileImageSaveLinkFull, file_get_contents($imageLink, false, stream_context_create($arrContextOptions)));
+
+        $downloadedImageSize = getimagesize($profileImageSaveLinkFull);
+
+        if ($downloadedImageSize[0] > 1200 || $downloadedImageSize[1] > 1200) {
+            try {
+                $img = new SimpleImage($profileImageSaveLinkFull);
+                $img->best_fit(1200, 1200)->save($profileImageSaveLinkFull);
+            } catch (Exception $e) {
+                echo 'Error: ' . $e->getMessage();
+            }
+        }
+
+        $profileImageThumb = $userProfileImagePath . 'thumb_' . uniqid() . '_' . time() . '.jpg';
+        $profileImageThumbFull = public_path() . $profileImageThumb;
+        // Save thumbnail image
+        try {
+            $img = new SimpleImage($profileImageSaveLinkFull);
+            $img->best_fit(300, 300)->save($profileImageThumbFull);
+        } catch (Exception $e) {
+            echo 'Error: ' . $e->getMessage();
+        }
+
+        $photoProfile = new Photo();
+        $photoProfile->image = Config::get('app.public_url') . $profileImageSaveLink;
+        $photoProfile->thumb = Config::get('app.public_url') . $profileImageThumb;
+        $photoProfile->user_id = $user->_id;
+        
+        if ($is_profile) {
+            $photoProfile->is_profile = 1;
+        }
+        $photoProfile->save();
+    }
+
+    /**
 	 *	Logout a user: remove the specified active token from the database
 	 *	@param user User
 	 */
@@ -466,8 +474,9 @@ class UserController extends BaseController {
         }
 
 		$user->sessions;
+        $user->photos;
 
-		return ApiResponse::json(Helper::successResponseFormat(null, $user));
+		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
 
 	/**
@@ -542,6 +551,7 @@ class UserController extends BaseController {
 	public function show($user) {        
 //		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
+        $user->photos;
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
 
