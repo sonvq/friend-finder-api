@@ -291,8 +291,8 @@ class UserController extends BaseController {
                 $user->latitude = null;
                         
                 $user->facebook_id = $profile->getId();
-                $user->save();            
-                      
+                $user->save();                                                  
+                
                 $imageLink = 'http://graph.facebook.com/' . $profile->getId() . '/picture?width=9999';
                 $this->getAndCropImageFromLink($user, $imageLink, 1, true);
                 
@@ -335,11 +335,13 @@ class UserController extends BaseController {
                         $profilePhotoData = $profilePhotosArray['data'];
 
                         if (is_array($profilePhotoData) && count($profilePhotoData) > 0) {
-                            foreach ($profilePhotoData as $singleProfilePhoto) {
+                            foreach ($profilePhotoData as $key => $singleProfilePhoto) {
                                 $allImageLinks = $singleProfilePhoto->images;
                                 $chosenImageLinkObject = $allImageLinks[0]; // the largest size
-                                $imageLink = $chosenImageLinkObject->source;
-                                $this->getAndCropImageFromLink($user, $imageLink, 0);                                
+                                $imageLink = $chosenImageLinkObject->source;                                
+                                if ($key != 0) {
+                                    $this->getAndCropImageFromLink($user, $imageLink, 0);                               
+                                }
                             }
                         }
                     }
