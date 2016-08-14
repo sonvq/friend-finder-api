@@ -1,11 +1,12 @@
 <?php
 
-class EventModel extends SmartLoquent {
+class EventModel extends BaseModel {
 
     protected $collection = 'events';
     protected $table = 'events';
     public $timestamps = true;
     protected static $_table = 'events';
+    protected static $_model = 'EventModel';
     
     protected $with = array('event_type_details');
     
@@ -30,33 +31,10 @@ class EventModel extends SmartLoquent {
         return self::$createRules;
     }
     
-    public static function getAll (array $where = array(), array $sort = array(), $limit = 10, $offset = 0) {
-        $query = DB::table(static::$_table . ' as r');
-        
-        static::onPreQuery($query, $where);
-        
-        foreach ($where as $key => $value) {
-            if (is_array($value)) {
-                $query->whereIn('r.' . $key, $value);    
-            } else {
-                $query->where('r.' . $key, $value);
-            }
-        }
-        
-        foreach ($sort as $key => $value) {
-            $query->orderBy('r.' . $key, $value);    
-        }
-        
-        if ($limit) {
-            $query->skip($offset);
-            $query->take($limit);
-        }
-        
-        return $query->get();
-    }
     
     public static function onPreQuery(\Illuminate\Database\Query\Builder  $query, &$where = null)
     {
+        // only get event of other users
         if (isset($where['token'])) {
             if (!empty($where['token'])) {
                 $user = Token::userFor ( $where['token'] );                
@@ -64,6 +42,9 @@ class EventModel extends SmartLoquent {
             }
             unset($where['token']);
         }
+        
+        // only get active event
+        $query->where('r.end_date', '>', date("Y-m-d H:i:s"));
     }
 
 }
