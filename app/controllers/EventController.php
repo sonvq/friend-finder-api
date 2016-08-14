@@ -28,6 +28,7 @@ class EventController extends BaseController {
             // Add User info to event list
             foreach ($result as $id=>$object) {
                 $object->user = User::find($object->user_id)->toArray();
+                $object->event_type_details = EventType::find($object->event_type)->toArray();
             }
         }
 

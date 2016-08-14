@@ -127,12 +127,6 @@ class UserController extends BaseController {
     protected function postProcessUserArray(User $userObject) {
         $userArray = $userObject->toArray();
         
-        if (isset($userArray['profile_image']) && $userArray['profile_image']) {
-            $userArray['profile_image_square'] = $userArray['profile_image'] . '?type=square';
-            $userArray['profile_image_small'] = $userArray['profile_image'] . '?type=small';
-            $userArray['profile_image_normal'] = $userArray['profile_image'] . '?type=normal';
-            $userArray['profile_image_large'] = $userArray['profile_image'] . '?type=large';
-        }
         if (isset($userArray['birthday']) && $userArray['birthday']) {
             if (strpos($userArray['birthday'], '/') !== false) {
                 $userArray['age'] = $this->caculateAgeFromBirthday($userArray['birthday']);    
