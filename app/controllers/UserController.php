@@ -292,12 +292,12 @@ class UserController extends BaseController {
                 $profileImagepath = '/profile_image/';
                 
                 if (!is_dir($profileImagepath)) {
-                    mkdir($profileImagepath, 0777, true);
+                    mkdir(public_path() . $profileImagepath, 0777, true);
                 }
                 
                 $userProfileImagePath = $profileImagepath . 'user_' . $user->_id . '/';
                 if (!is_dir($userProfileImagePath)) {
-                    mkdir($userProfileImagePath, 0777, true);
+                    mkdir(public_path() . $userProfileImagePath, 0777, true);
                 }
                 
                 // Remove old files                
