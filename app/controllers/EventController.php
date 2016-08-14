@@ -12,6 +12,12 @@ class EventController extends BaseController {
         
         
         if (count($result) > 0) {
+            // Add User info to event list
+            foreach ($result as $id=>$object) {
+                $object->user = User::find($object->user_id)->toArray();
+                $object->event_type_details = EventType::find($object->event_type)->toArray();
+            }
+            
             // TODO: optimize
             foreach ($result as $id=>$object) {
                 if(!empty($query['fields'])) {
@@ -24,12 +30,7 @@ class EventController extends BaseController {
                     }
                 }                
             }
-            
-            // Add User info to event list
-            foreach ($result as $id=>$object) {
-                $object->user = User::find($object->user_id)->toArray();
-                $object->event_type_details = EventType::find($object->event_type)->toArray();
-            }
+                        
         }
 
         return ApiResponse::json(Helper::successResponseFormat(null, $result));
@@ -106,8 +107,9 @@ class EventController extends BaseController {
             $event->end_date = date("Y-m-d H:i:s", strtotime("$plusMinutes minutes"));
 
 
-			if ( !$event->save() )
-				$event = ApiResponse::errorInternal('An error occured. Please, try again.');
+			if ( !$event->save() ) {
+				return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+            }
 
 		}
 		else {

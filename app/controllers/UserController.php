@@ -28,8 +28,9 @@ class UserController extends BaseController {
 			$user->lastname 			= Input::has('lastname')? $input['lastname'] : '';
 			$user->password 			= Hash::make( $input['password'] );
 
-			if ( !$user->save() )
-				$user = ApiResponse::errorInternal('An error occured. Please, try again.');
+			if ( !$user->save() ) {
+				return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+            }
 
 		}
 		else {
@@ -62,8 +63,9 @@ class UserController extends BaseController {
 			$user->longitude            = Input::has('longitude')? $input['longitude'] : null;
 			$user->latitude 			= Input::has('latitude')? $input['latitude'] : null;
 
-			if ( !$user->save() )
-				$user = ApiResponse::errorInternal('An error occured. Please, try again.');
+			if ( !$user->save() ) {
+				return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+            }
 
 		}
 		else {
@@ -274,6 +276,14 @@ class UserController extends BaseController {
                 }
                 
                 $user->birthday = (!empty($profile->getProperty('birthday'))) ? $profile->getProperty('birthday') : null;                                
+                             
+                $user->age = null;
+                if (!empty($profile->getProperty('birthday'))) {
+                    if (strpos($profile->getProperty('birthday'), '/') !== false) {
+                        $user->age = $this->caculateAgeFromBirthday($profile->getProperty('birthday'));
+                    }
+                }
+
                 $user->about = (!empty($profile->getProperty('about'))) ? $profile->getProperty('about') : null;
                 $user->gender = (!empty($profile->getGender())) ? $profile->getGender() : null;
                 
@@ -402,11 +412,9 @@ class UserController extends BaseController {
 			Log::info('<!> Device Token Received : '. $device_token .' - Device ID Received : '. $device_id .' for user id: '.$token->user_id);
 			Log::info('<!> FACEBOOK Logged : '.$token->user_id.' on '.$token->device_os.'['.$token->device_id.'] with token '.$token->token);
 
-			$token = $token->toArray();                        
+			$token = $token->toArray();                                          
             
-            $userArray = $this->postProcessUserArray($user);            
-            
-			$token['user'] = $userArray;
+			$token['user'] = $user->toArray();
 
 			Log::info( json_encode($token) );
 			

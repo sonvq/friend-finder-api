@@ -28,6 +28,7 @@ class CreateUsersTable extends Migration {
             $table->string('facebook_id')->nullable();
             $table->string('about')->nullable();
             $table->string('birthday')->nullable();
+            $table->integer('age')->nullable();
             $table->string('gender')->nullable();
             $table->decimal('longitude', 9, 6)->nullable();
             $table->decimal('latitude', 8, 6)->nullable();
