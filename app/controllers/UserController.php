@@ -1,5 +1,7 @@
 <?php
 
+use abeautifulsite\SimpleImage as SimpleImage;
+
 class UserController extends BaseController {
 
 	public $restful = true;
@@ -232,9 +234,7 @@ class UserController extends BaseController {
                 
                 $user->name = !empty($profile->getName()) ? $profile->getName() : null;
                 
-                $user->middlename = !empty($profile->getMiddleName()) ? $profile->getMiddleName() : null;
-                
-                $user->profile_image = 'http://graph.facebook.com/' . $profile->getId() . '/picture';
+                $user->middlename = !empty($profile->getMiddleName()) ? $profile->getMiddleName() : null;                                
                 
                 $workArray = array();
                 
@@ -289,6 +289,63 @@ class UserController extends BaseController {
                 $user->facebook_id = $profile->getId();
                 $user->save();            
             
+                $profileImagepath = '/profile_image/';
+                
+                if (!file_exists($profileImagepath)) {
+                    mkdir($profileImagepath, 0777, true);
+                }
+                
+                $userProfileImagePath = $profileImagepath . 'user_' . $user->_id . '/';
+                if (!file_exists($userProfileImagePath)) {
+                    mkdir($userProfileImagePath, 0777, true);
+                }
+                
+                // Remove old files                
+                $files = glob(public_path() . $userProfileImagePath . '*'); // get all file names                
+                foreach ($files as $file) { // iterate files
+                    if (is_file($file))
+                        unlink($file); // delete file
+                }
+                
+                $profileImageFbLink = 'http://graph.facebook.com/' . $profile->getId() . '/picture?width=9999';
+                $profileImageSaveLink = $userProfileImagePath . 'profile_image_' . time() . '.jpg';
+                $arrContextOptions = array(
+                    "ssl" => array(
+                        "verify_peer" => false,
+                        "verify_peer_name" => false,
+                    ),
+                );
+                                 
+                $profileImageSaveLinkFull = public_path() . $profileImageSaveLink;
+                file_put_contents($profileImageSaveLinkFull, file_get_contents($profileImageFbLink, false, stream_context_create($arrContextOptions)));
+                
+                $downloadedImageSize = getimagesize($profileImageSaveLinkFull);
+                
+                if ($downloadedImageSize[0] > 1200 || $downloadedImageSize[1] > 1200) {
+                    try {
+                        $img = new SimpleImage($profileImageSaveLinkFull);
+                        $img->best_fit(1200, 1200)->save($profileImageSaveLinkFull);
+                    } catch(Exception $e) {
+                        echo 'Error: ' . $e->getMessage();
+                    }
+                }
+                
+                $profileImageThumb = $userProfileImagePath . 'profile_image_thumb_' . time() . '.jpg';
+                $profileImageThumbFull = public_path() . $profileImageThumb;
+                // Save thumbnail image
+                try {
+                    $img = new SimpleImage($profileImageSaveLinkFull);
+                    $img->best_fit(300, 300)->save($profileImageThumbFull);
+                } catch(Exception $e) {
+                    echo 'Error: ' . $e->getMessage();
+                }
+                
+                // get and set profile picture
+                $user->profile_image = Config::get('app.public_url') . $profileImageSaveLink;
+                $user->profile_thumb = Config::get('app.public_url') . $profileImageThumb;
+                
+                $user->save();
+                
                 // Get id of profile picture album
                 $profilePictureId = '';
                 

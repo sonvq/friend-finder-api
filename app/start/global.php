@@ -94,3 +94,5 @@ App::down(function()
 require app_path().'/filters.php';
 
 require app_path().'/Helper.php';
+
+require app_path().'/components/SimpleImage.php';
