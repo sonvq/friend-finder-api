@@ -291,12 +291,12 @@ class UserController extends BaseController {
             
                 $profileImagepath = '/profile_image/';
                 
-                if (!file_exists($profileImagepath)) {
+                if (!is_dir($profileImagepath)) {
                     mkdir($profileImagepath, 0777, true);
                 }
                 
                 $userProfileImagePath = $profileImagepath . 'user_' . $user->_id . '/';
-                if (!file_exists($userProfileImagePath)) {
+                if (!is_dir($userProfileImagePath)) {
                     mkdir($userProfileImagePath, 0777, true);
                 }
                 
