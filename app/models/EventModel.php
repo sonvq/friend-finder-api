@@ -42,7 +42,7 @@ class EventModel extends BaseModel {
                 $latitude = $user->latitude;
                 $query->addSelect(
                     DB::raw("(
-                        3959 * acos (
+                        6371 * acos (
                         cos ( radians($latitude) )
                         * cos( radians( r.latitude ) )
                         * cos( radians( r.longitude ) - radians($longitude) )
