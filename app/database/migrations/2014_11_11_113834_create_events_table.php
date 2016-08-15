@@ -21,6 +21,8 @@ class CreateEventsTable extends Migration {
             $table->integer('age_end');
             $table->string('gender');
             $table->dateTime('end_date');
+            $table->decimal('longitude', 9, 6)->nullable();
+            $table->decimal('latitude', 8, 6)->nullable();
             $table->integer('event_type')->unsigned()->index();
             $table->timestamps();
         });

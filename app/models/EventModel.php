@@ -34,6 +34,26 @@ class EventModel extends BaseModel {
     
     public static function onPreQuery(\Illuminate\Database\Query\Builder  $query, &$where = null)
     {
+        $user = Token::userFor ( Input::get('token') );
+        
+        if (isset($where['nearby']) && $where['nearby'] > 0) {
+            if (!empty($user->longitude) && !empty($user->latitude)) {
+                $longitude = $user->longitude;
+                $latitude = $user->latitude;
+                $query->addSelect(
+                    DB::raw("(
+                        3959 * acos (
+                        cos ( radians($latitude) )
+                        * cos( radians( r.latitude ) )
+                        * cos( radians( r.longitude ) - radians($longitude) )
+                        + sin ( radians($latitude) )
+                        * sin( radians( r.latitude ) )
+                    )) AS distance")
+                );                                                
+            }
+            unset($where['nearby']);
+        }
+        
         // only get event of other users
         if (isset($where['token'])) {
             if (!empty($where['token'])) {

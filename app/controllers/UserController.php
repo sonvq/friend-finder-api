@@ -201,9 +201,9 @@ class UserController extends BaseController {
              * Scope user_education_history => for education info
              * Scope user_about_me => for about info
              * Scope user_birthday => for birthday and age
-             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id}
+             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes{category}
              */
-            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id}';
+            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes{category}';
 			$profile = $facebook->getMe(array(
                 'fields' => $fields)
             );

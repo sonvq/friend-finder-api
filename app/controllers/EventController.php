@@ -13,7 +13,7 @@ class EventController extends BaseController {
         
         if (count($result) > 0) {
             // Add User info to event list
-            foreach ($result as $id=>$object) {
+            foreach ($result as $id=>$object) {                
                 $userObject = User::find($object->user_id);
                 $userObject->photos;
                 $object->user = $userObject->toArray();
