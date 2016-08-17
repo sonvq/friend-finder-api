@@ -203,7 +203,7 @@ class UserController extends BaseController {
              * Scope user_birthday => for birthday and age
              * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes{category}
              */
-            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes{category}';
+            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes.limit(250){category}';
 			$profile = $facebook->getMe(array(
                 'fields' => $fields)
             );
@@ -281,6 +281,26 @@ class UserController extends BaseController {
                 if (!empty($profile->getProperty('birthday'))) {
                     if (strpos($profile->getProperty('birthday'), '/') !== false) {
                         $user->age = $this->caculateAgeFromBirthday($profile->getProperty('birthday'));
+                    }
+                }
+                
+                $user->interest = null;
+                if (!empty($profile->getProperty('likes'))) {
+                    $likesArray = $profile->getProperty('likes')->asArray();
+                    $interestArray = array();
+                    if (is_array($likesArray) && count($likesArray) > 0) {
+                        $likesArrayData = $likesArray['data'];
+                        foreach ($likesArrayData as $singleLike) {                            
+                            $interestArray[] = $singleLike->category;
+                        }
+                    }
+                    
+                    if (is_array($interestArray) && count($interestArray) > 0) {
+                        // count Occurrence
+                        $valueOccurrence = array_count_values($interestArray);                        
+                        arsort($valueOccurrence);                        
+                        $subArray = array_slice($valueOccurrence,0,5);
+                        $user->interest = implode(', ', array_keys($subArray));
                     }
                 }
 

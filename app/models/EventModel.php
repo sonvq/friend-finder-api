@@ -24,7 +24,9 @@ class EventModel extends BaseModel {
         'age_end'       => 'required|integer|min:18|max:55|greater_than:age_start',
         'gender'        => 'required|in:male,female,both',
         'event_type'    => 'required|integer|valid_event_type',
-        'created_at'    => 'no_exist_event_running'
+        'created_at'    => 'no_exist_event_running',
+        'latitude'		=>	['required', 'regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/'],
+		'longitude'		=>	['required', 'regex:/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/'],        
     );
 
     public static function getCreateRules() {
@@ -49,7 +51,8 @@ class EventModel extends BaseModel {
                         + sin ( radians($latitude) )
                         * sin( radians( r.latitude ) )
                     )) AS distance")
-                );                                                
+                );        
+                $query->having('distance', '<', $where['nearby']);
             }
             unset($where['nearby']);
         }

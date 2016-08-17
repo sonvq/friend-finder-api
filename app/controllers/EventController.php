@@ -104,6 +104,8 @@ class EventController extends BaseController {
             $event->age_end             = $input['age_end'];            
             $event->event_type          = $input['event_type'];  
             $event->created_at          = $input['created_at'];
+            $event->latitude            = $input['latitude'];
+            $event->longitude           = $input['longitude'];
             
             $plusMinutes = '+' . $event->period * 60;            
             $event->end_date = date("Y-m-d H:i:s", strtotime("$plusMinutes minutes"));
