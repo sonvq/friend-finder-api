@@ -57,6 +57,23 @@ class EventModel extends BaseModel {
             unset($where['nearby']);
         }
         
+        if (isset($where['age_start']) && $where['age_start'] >= 0 
+                && isset($where['age_end']) && $where['age_end'] >= 0 
+                && $where['age_start'] <= $where['age_end']) {
+            $query->where(function($query) use ($where) {
+                $query->where('r.age_start', '>', $where['age_start']);
+                $query->where('r.age_start', '<', $where['age_end']);
+            })
+            ->orWhere(function($query) use ($where) {
+                $query->where('r.age_end', '>', $where['age_start']);
+                $query->where('r.age_end', '<', $where['age_end']);
+            })
+            ->orWhere('r.age_start', '=', $where['age_start'])
+            ->orWhere('r.age_start', '=', $where['age_end'])
+            ->orWhere('r.age_end', '=', $where['age_start'])
+            ->orWhere('r.age_end', '=', $where['age_end']);
+        }
+        
         // only get event of other users
         if (isset($where['token'])) {
             if (!empty($where['token'])) {
