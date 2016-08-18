@@ -201,9 +201,9 @@ class UserController extends BaseController {
              * Scope user_education_history => for education info
              * Scope user_about_me => for about info
              * Scope user_birthday => for birthday and age
-             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes{category}
+             * me?fields=id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes.limit(250){category,id,name}
              */
-            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes.limit(250){category}';
+            $fields = 'id,email,first_name,last_name,name,middle_name,work,education,about,birthday,gender,albums{type,name,id},likes.limit(250){category,id,name}';
 			$profile = $facebook->getMe(array(
                 'fields' => $fields)
             );
@@ -283,27 +283,7 @@ class UserController extends BaseController {
                         $user->age = $this->caculateAgeFromBirthday($profile->getProperty('birthday'));
                     }
                 }
-                
-                $user->interest = null;
-                if (!empty($profile->getProperty('likes'))) {
-                    $likesArray = $profile->getProperty('likes')->asArray();
-                    $interestArray = array();
-                    if (is_array($likesArray) && count($likesArray) > 0) {
-                        $likesArrayData = $likesArray['data'];
-                        foreach ($likesArrayData as $singleLike) {                            
-                            $interestArray[] = $singleLike->category;
-                        }
-                    }
-                    
-                    if (is_array($interestArray) && count($interestArray) > 0) {
-                        // count Occurrence
-                        $valueOccurrence = array_count_values($interestArray);                        
-                        arsort($valueOccurrence);                        
-                        $subArray = array_slice($valueOccurrence,0,5);
-                        $user->interest = implode(', ', array_keys($subArray));
-                    }
-                }
-
+                                
                 $user->about = (!empty($profile->getProperty('about'))) ? $profile->getProperty('about') : null;
                 $user->gender = (!empty($profile->getGender())) ? $profile->getGender() : null;
                 
@@ -311,8 +291,24 @@ class UserController extends BaseController {
                 $user->latitude = null;
                         
                 $user->facebook_id = $profile->getId();
-                $user->save();                                                  
+                $user->save(); 
                 
+                if (!empty($profile->getProperty('likes'))) {
+                    $likesArray = $profile->getProperty('likes')->asArray();
+                    $interestArray = array();
+                    if (is_array($likesArray) && count($likesArray) > 0) {
+                        $likesArrayData = $likesArray['data'];
+                        foreach ($likesArrayData as $singleLike) {   
+                            $interestObject = new Interest();
+                            $interestObject->user_id = $user->_id;
+                            $interestObject->page_category = $singleLike->category;
+                            $interestObject->page_id = $singleLike->id;
+                            $interestObject->page_name = $singleLike->name;
+                            $interestObject->save();
+                        }
+                    }                   
+                }
+
                 $imageLink = 'http://graph.facebook.com/' . $profile->getId() . '/picture?width=9999';
                 $this->getAndCropImageFromLink($user, $imageLink, 1, true);
                 
@@ -367,7 +363,8 @@ class UserController extends BaseController {
                     }
                 }                
             }                
-            $user->photos->toArray();
+            $user->photos;
+            $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
 
 			$device_id = Input::has('device_id')? $input['device_id'] : '';
 			$device_type = Input::has('device_type')? $input['device_type'] : '';
@@ -497,6 +494,7 @@ class UserController extends BaseController {
 
 		$user->sessions;
         $user->photos;
+        $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
 
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
@@ -574,6 +572,7 @@ class UserController extends BaseController {
 //		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
         $user->photos;
+        $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
 

@@ -60,6 +60,8 @@ Route::group(array('prefix' => 'v1'), function(){
 
         Route::resource('events', 'EventController');
         
+        Route::resource('interests', 'InterestController');
+        
         Route::resource('ratings', 'RatingController');
         
         Route::resource('event_types', 'EventTypesController', array('only' => array('index')) );
