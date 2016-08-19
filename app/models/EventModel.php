@@ -39,8 +39,8 @@ class EventModel extends BaseModel {
         $user = Token::userFor ( Input::get('token') );
         
         if (isset($where['nearby']) && $where['nearby'] > 0 ) {            
-            if (isset($where['user_longitude']) && $where['user_longitude'] > 0) {
-                if (isset($where['user_latitude']) && $where['user_latitude'] > 0) {
+            if (isset($where['user_longitude']) && !empty($where['user_longitude'])) {
+                if (isset($where['user_latitude']) && !empty($where['user_latitude'])) {
                     $longitude = $where['user_longitude'];
                     $latitude = $where['user_latitude'];
                     $query->addSelect(
