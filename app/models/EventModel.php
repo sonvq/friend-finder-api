@@ -38,25 +38,27 @@ class EventModel extends BaseModel {
     {
         $user = Token::userFor ( Input::get('token') );
         
-        if (isset($where['nearby']) && $where['nearby'] > 0 
-                && isset($where['user_longitude']) && $where['user_longitude'] > 0
-                && isset($where['user_latitude']) && $where['user_latitude'] > 0) {
-            $longitude = $where['user_longitude'];
-            $latitude = $where['user_latitude'];
-            $query->addSelect(
-                DB::raw("(
-                    6371 * acos (
-                    cos ( radians($latitude) )
-                    * cos( radians( r.latitude ) )
-                    * cos( radians( r.longitude ) - radians($longitude) )
-                    + sin ( radians($latitude) )
-                    * sin( radians( r.latitude ) )
-                )) AS distance")
-            );        
-            $query->having('distance', '<', $where['nearby']);
-            unset($where['nearby']);
-            unset($where['user_longitude']);
-            unset($where['user_latitude']);
+        if (isset($where['nearby']) && $where['nearby'] > 0 ) {            
+            if (isset($where['user_longitude']) && $where['user_longitude'] > 0) {
+                if (isset($where['user_latitude']) && $where['user_latitude'] > 0) {
+                    $longitude = $where['user_longitude'];
+                    $latitude = $where['user_latitude'];
+                    $query->addSelect(
+                        DB::raw("(
+                            6371 * acos (
+                            cos ( radians($latitude) )
+                            * cos( radians( r.latitude ) )
+                            * cos( radians( r.longitude ) - radians($longitude) )
+                            + sin ( radians($latitude) )
+                            * sin( radians( r.latitude ) )
+                        )) AS distance")
+                    );        
+                    $query->having('distance', '<', $where['nearby']);
+                    unset($where['user_latitude']);
+                }
+                unset($where['user_longitude']);
+            }                
+            unset($where['nearby']);            
         }
         
         if (isset($where['age_start']) && ($where['age_start'] >= 0)
