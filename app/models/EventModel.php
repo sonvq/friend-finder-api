@@ -57,13 +57,13 @@ class EventModel extends BaseModel {
             unset($where['nearby']);
         }
         
-        if (isset($where['age_start']) && $where['age_start'] >= 0 
-                && isset($where['age_end']) && $where['age_end'] >= 0 
-                && $where['age_start'] <= $where['age_end']) {
+        if (isset($where['age_start']) && ($where['age_start'] >= 0)
+                && isset($where['age_end']) && ($where['age_end'] >= 0)
+                && ($where['age_start'] <= $where['age_end'])) {
             $ageStart = $where['age_start'];
             $ageEnd = $where['age_end'];
 
-
+die('hehe');
             $query->where(function($query) use ($where) {            
                 $query->whereBetween('r.age_start', array($where['age_start'], $where['age_end']));
                 $query->orWhereBetween('r.age_end', array($where['age_start'], $where['age_end']));
