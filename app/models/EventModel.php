@@ -62,20 +62,28 @@ class EventModel extends BaseModel {
                 && $where['age_start'] <= $where['age_end']) {
             $ageStart = $where['age_start'];
             $ageEnd = $where['age_end'];
-            $query->whereRaw("($ageStart < r.age_start < $ageEnd) OR ($ageStart < r.age_end < $ageEnd) OR (r.age_start = $ageStart) OR (r.age_start = $ageEnd) OR (r.age_end = $ageStart) OR (r.age_end = $ageEnd)");
+
+
+            $query->where(function($query) use ($where) {            
+                $query->whereBetween('r.age_start', array($where['age_start'], $where['age_end']));
+                $query->orWhereBetween('r.age_end', array($where['age_start'], $where['age_end']));
+//                $query->orWhere('r.age_start', '=', $where['age_start']);
+//                $query->orWhere('r.age_start', '=', $where['age_end']);
+//                $query->orWhere('r.age_end', '=', $where['age_start']);
+//                $query->orWhere('r.age_end', '=', $where['age_end']);     
+            });
 //            $query->where(function($query) use ($where) {
-//                $query->where(function($query) use ($where) {
-//                    $query->where('r.age_start', '>', $where['age_start'])->where('r.age_start', '<', $where['age_end']);
-//                })
-//                ->orWhere(function($query) use ($where) {
-//                    $query->where('r.age_end', '>', $where['age_start'])->where('r.age_end', '<', $where['age_end']);
-//                })
-//                ->orWhere('r.age_start', '=', $where['age_start'])
-//                ->orWhere('r.age_start', '=', $where['age_end'])
-//                ->orWhere('r.age_end', '=', $where['age_start'])
-//                ->orWhere('r.age_end', '=', $where['age_end']);
-//            });
-            
+//                $query->where('r.age_start', '>', $where['age_start']);
+//                $query->where('r.age_start', '<', $where['age_end']);
+//            })
+//            ->orWhere(function($query) use ($where) {
+//                $query->where('r.age_end', '>', $where['age_start']);
+//                $query->where('r.age_end', '<', $where['age_end']);
+//            })
+//            ->orWhere('r.age_start', '=', $where['age_start'])
+//            ->orWhere('r.age_start', '=', $where['age_end'])
+//            ->orWhere('r.age_end', '=', $where['age_start'])
+//            ->orWhere('r.age_end', '=', $where['age_end']);            
         }
         // only get event of other users
         if (isset($where['token'])) {
