@@ -33,3 +33,5 @@ http://graph.facebook.com/1238052666218464/picture?type=large
 
 https://github.com/cosenary/Instagram-PHP-API
 
+dd(DB::getQueryLog());
+
