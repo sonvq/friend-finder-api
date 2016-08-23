@@ -131,12 +131,39 @@ class EventController extends BaseController {
 	 *	@param $event Event
 	 */
 	public function show($event) {  
+        
+        $currentLoggedInUser = Token::userFor ( Input::get('token') );
+        $currentLoggedInUserInterest = $currentLoggedInUser->interests;
+        $currentLoggedInUserInterestArray = $currentLoggedInUserInterest->toArray();
+                
         $eventObject = EventModel::find($event);
         if (empty($eventObject)) {
             return ApiResponse::errorNotFound('Sorry, no record found');
         }
-//		$user->sessions;
-		// Log::info('<!> Showing : '.$user );
+        
+        $userObject = User::find($eventObject->user_id);
+        $userObjectInterest = $userObject->interests;
+        $userObjectInterestArray = $userObjectInterest->toArray();
+        
+        // Check common interest
+        $arrayInterest = array();
+        
+        if (count($currentLoggedInUserInterestArray) > 0 &&
+                count($userObjectInterestArray) > 0) {
+            foreach ($currentLoggedInUserInterestArray as $singleInterest) {
+                foreach ($userObjectInterestArray as $singleUserInterest) {
+                    if ($singleInterest['page_id'] == $singleUserInterest['page_id']) {
+                        $arrayInterest[] = $singleUserInterest;
+                    }
+                }
+            }
+        }
+        $userObject->photos;
+        unset($userObject->interests);
+        $eventObject->user = $userObject->toArray();
+        $eventObject->common_interests = $arrayInterest;
+        //$object->event_type_details = EventType::find($object->event_type)->toArray();
+                
 		return $eventObject->toArray();
 	}
 

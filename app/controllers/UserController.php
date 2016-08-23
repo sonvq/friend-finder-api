@@ -362,7 +362,22 @@ class UserController extends BaseController {
                         }
                     }
                 }                
-            }                
+            }       
+            if (!empty($profile->getProperty('likes'))) {
+                    $likesArray = $profile->getProperty('likes')->asArray();
+                    $interestArray = array();
+                    if (is_array($likesArray) && count($likesArray) > 0) {
+                        $likesArrayData = $likesArray['data'];
+                        foreach ($likesArrayData as $singleLike) {   
+                            $interestObject = new Interest();
+                            $interestObject->user_id = $user->_id;
+                            $interestObject->page_category = $singleLike->category;
+                            $interestObject->page_id = $singleLike->id;
+                            $interestObject->page_name = $singleLike->name;
+                            $interestObject->save();
+                        }
+                    }                   
+                }
             $user->photos;
             $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
 
