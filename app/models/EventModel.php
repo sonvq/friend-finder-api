@@ -38,42 +38,39 @@ class EventModel extends BaseModel {
     {
         $user = Token::userFor ( Input::get('token') );
         
-        if (isset($where['nearby']) && $where['nearby'] > 0) {
-            if (!empty($user->longitude) && !empty($user->latitude)) {
-                $longitude = $user->longitude;
-                $latitude = $user->latitude;
-                $query->addSelect(
-                    DB::raw("(
-                        6371 * acos (
-                        cos ( radians($latitude) )
-                        * cos( radians( r.latitude ) )
-                        * cos( radians( r.longitude ) - radians($longitude) )
-                        + sin ( radians($latitude) )
-                        * sin( radians( r.latitude ) )
-                    )) AS distance")
-                );        
-                $query->having('distance', '<', $where['nearby']);
-            }
-            unset($where['nearby']);
+        if (isset($where['nearby']) && $where['nearby'] > 0 ) {            
+            if (isset($where['user_longitude']) && !empty($where['user_longitude'])) {
+                if (isset($where['user_latitude']) && !empty($where['user_latitude'])) {
+                    $longitude = $where['user_longitude'];
+                    $latitude = $where['user_latitude'];
+                    $query->addSelect(
+                        DB::raw("(
+                            6371 * acos (
+                            cos ( radians($latitude) )
+                            * cos( radians( r.latitude ) )
+                            * cos( radians( r.longitude ) - radians($longitude) )
+                            + sin ( radians($latitude) )
+                            * sin( radians( r.latitude ) )
+                        )) AS distance")
+                    );        
+                    $query->having('distance', '<', $where['nearby']);
+                    unset($where['user_latitude']);
+                }
+                unset($where['user_longitude']);
+            }                
+            unset($where['nearby']);            
         }
         
-        if (isset($where['age_start']) && $where['age_start'] >= 0 
-                && isset($where['age_end']) && $where['age_end'] >= 0 
-                && $where['age_start'] <= $where['age_end']) {
-            $query->where(function($query) use ($where) {
-                $query->where('r.age_start', '>', $where['age_start']);
-                $query->where('r.age_start', '<', $where['age_end']);
-            })
-            ->orWhere(function($query) use ($where) {
-                $query->where('r.age_end', '>', $where['age_start']);
-                $query->where('r.age_end', '<', $where['age_end']);
-            })
-            ->orWhere('r.age_start', '=', $where['age_start'])
-            ->orWhere('r.age_start', '=', $where['age_end'])
-            ->orWhere('r.age_end', '=', $where['age_start'])
-            ->orWhere('r.age_end', '=', $where['age_end']);
+        if (isset($where['age_start']) && ($where['age_start'] >= 0)
+                && isset($where['age_end']) && ($where['age_end'] >= 0)
+                && ($where['age_start'] <= $where['age_end'])) {
+            $query->where(function($query) use ($where) {            
+                $query->whereBetween('r.age_start', array($where['age_start'], $where['age_end']));
+                $query->orWhereBetween('r.age_end', array($where['age_start'], $where['age_end']));
+            });
+            unset($where['age_start']);
+            unset($where['age_end']);
         }
-        
         // only get event of other users
         if (isset($where['token'])) {
             if (!empty($where['token'])) {
