@@ -1,5 +1,7 @@
 <?php
 
+use abeautifulsite\SimpleImage as SimpleImage;
+
 class PhotoController extends BaseController {
 
 	public $restful = true;
@@ -106,7 +108,7 @@ class PhotoController extends BaseController {
 
         $downloadedImageSize = getimagesize($profileImageSaveLinkFull);
 
-        if ($downloadedImageSize[0] > 1200 || $downloadedImageSize[1] > 1200) {
+        if ($imageSize[0] > 1200 || $imageSize[1] > 1200) {
             try {
                 $img = new SimpleImage($profileImageSaveLinkFull);
                 $img->best_fit(1200, 1200)->save($profileImageSaveLinkFull);
