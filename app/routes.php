@@ -7,6 +7,7 @@
  *	Models are bson encoded objects (mongoDB)
  */
 Route::model('users', 'User');
+Route::model('photos', 'Photo');
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +60,7 @@ Route::group(array('prefix' => 'v1'), function(){
     Route::group(array('before' => 'logged_in'), function() {
 
         Route::resource('events', 'EventController');
+        Route::resource('photos', 'PhotoController');
         
         Route::resource('interests', 'InterestController');
         
