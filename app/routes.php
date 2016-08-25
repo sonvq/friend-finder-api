@@ -57,6 +57,8 @@ Route::group(array('prefix' => 'v1'), function(){
 
     //	user needs to have a registered and active token
     Route::group(array('before' => 'logged_in'), function() {
+        
+        Route::get('places/search',  array('as' => 'v1.places.search', 'uses' => 'PlaceController@search') );
 
         Route::resource('events', 'EventController');
         Route::resource('photos', 'PhotoController');

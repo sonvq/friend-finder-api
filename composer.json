@@ -10,7 +10,8 @@
 		"intervention/image": "1.*",
 		"facebook/php-sdk-v4" : "~4.0.0",
 		"iron-io/iron_mq" : "*",
-		"cosenary/instagram": "^2.3"
+		"cosenary/instagram": "^2.3",
+		"guzzlehttp/guzzle": "^6.2"
 	},
 	"require-dev": {
         "way/generators": "2.*",
