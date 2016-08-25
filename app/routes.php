@@ -7,7 +7,6 @@
  *	Models are bson encoded objects (mongoDB)
  */
 Route::model('users', 'User');
-Route::model('photos', 'Photo');
 
 /*
 |--------------------------------------------------------------------------
