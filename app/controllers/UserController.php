@@ -63,6 +63,14 @@ class UserController extends BaseController {
 			$user->longitude            = Input::has('longitude')? $input['longitude'] : null;
 			$user->latitude 			= Input::has('latitude')? $input['latitude'] : null;
 
+            if (isset($input['name']) && !empty($input['name'])) {
+                $user->name = $input['name'];
+            }
+            
+            if (isset($input['about']) && !empty($input['about'])) {
+                $user->about = $input['about'];
+            }
+            
 			if ( !$user->save() ) {
 				return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
             }
@@ -74,7 +82,9 @@ class UserController extends BaseController {
 		}
 		Log::info('<!> Updated : '.$user);
 
-		return ApiResponse::json(Helper::successResponseFormat(null, $user));
+		$user->photos;
+        $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
+		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
 
 	/**
