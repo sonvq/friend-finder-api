@@ -193,9 +193,9 @@ class PhotoController extends BaseController {
             unlink($fileThumb); 
         }     
         
-//        if (!$photo->delete()) {
-//            return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
-//        }                           
+        if (!$photo->delete()) {
+            return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+        }                           
         
         return ApiResponse::json(Helper::successResponseFormat(null, array('Successfully delete image')));
     }
