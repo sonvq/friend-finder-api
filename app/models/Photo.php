@@ -15,12 +15,12 @@ class Photo extends BaseModel {
     protected static $createRules = array(
         'user_id' => 'required',
         'photo' => 'required|mimes:jpeg,bmp,png',
-        'is_profile' => 'in:0,1|unique_is_profile'
+        'is_profile' => 'in:0,1'
     );
     
     protected static $updateRules = array(
         'user_id' => 'required',
-        'is_profile' => 'required|in:0,1|unique_is_profile'
+        'is_profile' => 'required|in:0,1'
     );
 
     public static function getCreateRules() {

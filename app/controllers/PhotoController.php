@@ -39,26 +39,7 @@ class PhotoController extends BaseController {
         $user = Token::userFor ( Input::get('token') );
         if ( empty($user) ) {
             return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
-        }        
-        
-        Validator::extend('unique_is_profile', function($attribute, $value, $parameters)
-        {
-            if ($value == 1) {
-                $user = Token::userFor ( Input::get('token') );
-                $matchThese = ['user_id' => $user->_id, 'is_profile' => 1];
-
-                $photo = Photo::where($matchThese)->get();
-                if (count($photo) > 0) {
-                    return false;
-                } 
-            }
-             
-            return true;        
-        });
-        
-        Validator::replacer('unique_is_profile', function($message, $attribute, $rule, $params) {
-            return ('There is only one profile image allowed, remove your existing profile image first');
-        });
+        }                        
         
         $input['user_id'] = $user->_id;
 		$validator = Validator::make( $input, Photo::getCreateRules() );
@@ -68,6 +49,16 @@ class PhotoController extends BaseController {
             $photo->user_id = $input['user_id'];
             $photo->is_profile = Input::has('is_profile')? $input['is_profile'] : 0;
 
+            if (isset($input['is_profile']) && $input['is_profile'] == 1) {
+                // Remove old profile image if exist
+                $matchThese = ['user_id' => $user->_id, 'is_profile' => 1];
+
+                $profileImage = Photo::where($matchThese)->first();
+                if ($profileImage) {
+                    $profileImage->is_profile = 0;
+                    $profileImage->save();
+                } 
+            }
             if (Input::hasFile('photo')) {
                 $avatarArray = $this->getAndCropImagePhoto ($user, Input::file('photo'));
 
@@ -104,26 +95,7 @@ class PhotoController extends BaseController {
         
         if ($user->_id != $photo->user_id) {
             return ApiResponse::errorForbidden(Helper::failResponseFormat(array('You donot own this record')));
-        }
-        
-        Validator::extend('unique_is_profile', function($attribute, $value, $parameters)
-        {
-            if ($value == 1) {
-                $user = Token::userFor ( Input::get('token') );
-                $matchThese = ['user_id' => $user->_id, 'is_profile' => 1];
-
-                $photo = Photo::where($matchThese)->get();
-                if (count($photo) > 0) {
-                    return false;
-                } 
-            }
-             
-            return true;        
-        });
-        
-        Validator::replacer('unique_is_profile', function($message, $attribute, $rule, $params) {
-            return ('There is only one profile image allowed, remove your existing profile image first');
-        });
+        }                
         
         $input['user_id'] = $user->_id;
 		$validator = Validator::make( $input, Photo::getUpdateRules() );
@@ -131,6 +103,17 @@ class PhotoController extends BaseController {
 		if ( $validator->passes() ) {            
             $photo->is_profile = Input::has('is_profile')? $input['is_profile'] : 0;
          
+            if (isset($input['is_profile']) && $input['is_profile'] == 1) {
+                // Remove old profile image if exist
+                $matchThese = ['user_id' => $user->_id, 'is_profile' => 1];
+
+                $profileImage = Photo::where($matchThese)->first();
+                if ($profileImage) {
+                    $profileImage->is_profile = 0;
+                    $profileImage->save();
+                } 
+            }
+            
             if (!$photo->save()) {
                 return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
             }
