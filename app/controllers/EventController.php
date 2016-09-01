@@ -160,9 +160,11 @@ class EventController extends BaseController {
             }
         }
         $userObject->photos;
+        $userObject->instagrams;
         unset($userObject->interests);
         $eventObject->user = $userObject->toArray();
         $eventObject->common_interests = $arrayInterest;
+                
         //$object->event_type_details = EventType::find($object->event_type)->toArray();
                 
         return ApiResponse::json(Helper::successResponseFormat(null, $eventObject->toArray()));

@@ -30,6 +30,9 @@ class CreateUsersTable extends Migration {
             $table->string('gender')->nullable();
             $table->decimal('longitude', 9, 6)->nullable();
             $table->decimal('latitude', 8, 6)->nullable();
+            $table->string('instagram_access_token')->nullable();
+            $table->string('instagram_username')->nullable();
+            $table->integer('instagram_connected')->nullable()->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

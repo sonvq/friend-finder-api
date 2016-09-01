@@ -90,6 +90,10 @@ class User extends SmartLoquent implements UserInterface, RemindableInterface {
     	return $this->hasMany('Photo');
     }
     
+    public function instagrams() {
+    	return $this->hasMany('Instagram');
+    }
+    
     public function interests() {
     	return $this->hasMany('Interest');
     }    

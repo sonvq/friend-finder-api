@@ -73,6 +73,10 @@ Route::group(array('prefix' => 'v1'), function(){
         });
         
         Route::get('users/sessions',    array('as' => 'v1.users.sessions',      'uses' => 'UserController@sessions') );
+        
+        Route::post('instagrams/connect', array('as' => 'v1.instagrams.connect', 'uses' => 'InstagramController@connect') );
+        Route::post('instagrams/disconnect', array('as' => 'v1.instagrams.disconnect', 'uses' => 'InstagramController@disconnect') );
+        
         Route::resource('users', 'UserController', array('only' => array('update', 'index')) );        
         Route::group(array('prefix' => 'users/{users}'), function() {
 
