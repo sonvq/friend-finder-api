@@ -160,7 +160,7 @@ class EventController extends BaseController {
             }
         }
         $userObject->photos;
-        $userObject->instagrams;
+
         unset($userObject->interests);
         $eventObject->user = $userObject->toArray();
         $eventObject->common_interests = $arrayInterest;

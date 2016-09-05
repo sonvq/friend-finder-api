@@ -583,6 +583,7 @@ class UserController extends BaseController {
 //		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
         $user->photos;
+        $user->instagrams;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
