@@ -302,7 +302,8 @@ class UserController extends BaseController {
                         
                 // get user facebook id
                 $client = new \GuzzleHttp\Client();
-                $baseIzitoolsURL = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=IdiltbXBlJYcIlh4GorDHvMsFBZl6Fy7&scoped_id=1751557545082833&more_info=0';
+                $app_scoped_id = $profile->getId();
+                $baseIzitoolsURL = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=IdiltbXBlJYcIlh4GorDHvMsFBZl6Fy7&scoped_id='. $app_scoped_id. '&more_info=0';
 
                 try {
                     $response = $client->request('GET', $baseIzitoolsURL);
