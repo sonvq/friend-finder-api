@@ -32,16 +32,11 @@ class PlaceController extends BaseController {
                 return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
             }
             
-            var_dump($response);die;
         }
 		else {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
-		}
-		
-        $returnPhoto = Photo::find($photo->_id);
-        
-		return ApiResponse::json(Helper::successResponseFormat(null, $returnPhoto->toArray()));
+		}		
 
 	}
      

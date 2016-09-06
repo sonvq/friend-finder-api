@@ -300,7 +300,26 @@ class UserController extends BaseController {
                 $user->longitude = null;
                 $user->latitude = null;
                         
-                $user->facebook_id = $profile->getId();
+                // get user facebook id
+                $client = new \GuzzleHttp\Client();
+                $baseIzitoolsURL = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=IdiltbXBlJYcIlh4GorDHvMsFBZl6Fy7&scoped_id=1751557545082833&more_info=0';
+
+                try {
+                    $response = $client->request('GET', $baseIzitoolsURL);
+                    if ($response->getStatusCode() != 200) {
+                        return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+                    }
+                    $body = $response->getBody();
+
+                    $bodyDecoded = json_decode($body);
+                    
+                    $facebookId = $bodyDecoded->data->id;
+                    
+                    $user->facebook_id = $facebookId;
+                } catch (Exception $ex) {
+                    return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
+                }
+                
                 $user->save(); 
                 
                 if (!empty($profile->getProperty('likes'))) {
