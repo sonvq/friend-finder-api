@@ -23,8 +23,8 @@ class InstagramController extends BaseController {
             $user->instagram_connected = 1;
             
             $instagram = new InstagramConnection(array(
-                'apiKey'      => '84f93341d98d477ba833141bc91dc3c6',
-                'apiSecret'   => '48dea9d8659843c390a8ec191522cf4a',
+                'apiKey'      => '3b6fdca485af4018825be1b9ed12ac42',
+                'apiSecret'   => '0ccbe3cc1cca4bb88615c5dc6b12b10c',
                 'apiCallback' => 'http://pickmefirst.co'
             ));
 
