@@ -8,7 +8,7 @@ return array(
 
 				'app_id'					=> 	'1772719776308236',
 				'app_secret'				=>	'23b0d1d316b6d0c33c64a1ff17dfa59b',
-				'app_secret_proof'			=>	false,
+				'app_secret_proof'			=>	true,
 
 			),
 

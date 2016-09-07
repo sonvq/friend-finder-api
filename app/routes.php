@@ -54,6 +54,8 @@ Route::group(array('prefix' => 'v1'), function(){
     Route::get('users/facebook/photos',  array('as' => 'v1.users.facebook.photos', 'uses' => 'UserController@facebookPhotos') );
     
     Route::resource('users', 'UserController', array('only' => array('store')) );
+    
+    Route::post('users/mutual_friend', array('as' => 'v1.users.mutual_friend', 'uses' => 'UserController@mutual'));
 
     //	user needs to have a registered and active token
     Route::group(array('before' => 'logged_in'), function() {

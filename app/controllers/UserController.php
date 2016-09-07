@@ -189,6 +189,32 @@ class UserController extends BaseController {
         }
     }
     
+
+    public function mutual() {
+        $input = Input::all();
+        $facebook = new FacebookWrapper();
+        $facebook->loginAsUser( $input['access_token'] );
+        
+        $context = $facebook->makeRequest('GET', '/' . $input['facebook_id'], array('fields' => 'context{mutual_friends}'), 'v2.7')->execute()->getGraphObject();;        
+        
+        if ( is_array($context) && isset($context['error']) ) {
+            $error = array($context['error']);
+            return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+        }
+        
+        $contextId = $context->getProperty('context')->getProperty('id');
+          
+        $friendMutuals = $facebook->makeRequest('GET', '/' . $contextId . '/mutual_friends')->execute()->getGraphObject();
+        
+        $result = array();
+        
+        $result['friends'] = $friendMutuals->getProperty('data')->asArray();
+        $result['summary'] = $friendMutuals->getProperty('summary')->asArray();
+        $result['paging'] = $friendMutuals->getProperty('paging')->asArray();
+
+        return ApiResponse::json(Helper::successResponseFormat(null, $result));
+    }
+    
     /**
 	 *	Authenticate a user based on Facebook access token. If the email address from facebook is already in the database, 
 	 *	the facebook user id will be added. 
