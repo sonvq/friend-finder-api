@@ -14,7 +14,7 @@ class Photo extends BaseModel {
 
     protected static $createRules = array(
         'user_id' => 'required',
-        'photo' => 'required|mimes:jpeg,bmp,png,gif,jpg',
+        'photo' => 'required|mimes:jpeg,bmp,png,gif',
         'is_profile' => 'in:0,1'
     );
     
