@@ -69,6 +69,8 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::resource('ratings', 'RatingController');
         
+        Route::resource('likes', 'LikeController');
+        
         Route::resource('event_types', 'EventTypesController', array('only' => array('index')) );
         Route::group(array('prefix' => 'event_types/{event_type}'), function() {
             Route::get('show',          array('as' => 'v1.event_types.show',      'uses' => 'EventTypesController@show') );
