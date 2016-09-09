@@ -31,7 +31,7 @@ class LikeController extends BaseController {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
-		Log::info('<!> Created : ' . $like);
+
         $returnLike = Like::find($like->_id);
         
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnLike->toArray()));
