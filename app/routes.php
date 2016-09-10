@@ -62,7 +62,10 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::get('places/search',  array('as' => 'v1.places.search', 'uses' => 'PlaceController@search') );
 
-        Route::resource('events', 'EventController');
+        Route::get('events/my_event',  array('as' => 'v1.events.my_event', 'uses' => 'EventController@myEvent') );
+        
+        Route::resource('events', 'EventController');                
+        
         Route::resource('photos', 'PhotoController');
         
         Route::resource('interests', 'InterestController');

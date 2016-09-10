@@ -4,6 +4,54 @@ class EventController extends BaseController {
 
 	public $restful = true;
 
+    public function myEvent() {
+        $query = $this->processInput();               
+
+        $result = EventModel::getAllMyEvents($query['where'], $query['sort'], $query['limit'], $query['offset']);
+        
+        
+        if (count($result) > 0) {
+            // Add User info to event list
+            foreach ($result as $id=>$object) {                
+                $userObject = User::find($object->user_id);
+                $userObject->photos;
+                $object->user = $userObject->toArray();
+                $object->event_type_details = EventType::find($object->event_type)->toArray();
+                
+                $allLikeObjects = Like::where('event_id', $object->_id)->where('status', 'like')->get();
+                
+                if (count($allLikeObjects) > 0) {
+                    foreach ($allLikeObjects as $singleLike) {
+                        $userObject = User::find($singleLike->user_id);
+                        $userObject->photos;
+                        $singleLike->user = $userObject->toArray();
+                    }
+                    
+                    $object->event_like_details = $allLikeObjects->toArray();
+                } else {
+                    $object->event_like_details = $allLikeObjects->toArray();
+                }                
+            }
+            
+            // TODO: optimize
+            foreach ($result as $id=>$object) {
+                if(!empty($query['fields'])) {
+                    foreach ($object as $key=>$value) {
+                        if(in_array($key, $query['fields'])) {
+                            continue;
+                        } else {
+                            unset($object->$key);
+                        }
+                    }
+                }                
+            }
+                        
+        }
+
+        return ApiResponse::json(Helper::successResponseFormat(null, $result));
+
+    }
+    
 	public function index() {
         
         $query = $this->processInput();               
@@ -139,7 +187,7 @@ class EventController extends BaseController {
                 
         $eventObject = EventModel::find($event);
         if (empty($eventObject)) {
-            return ApiResponse::errorNotFound('Sorry, no record found');
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no record found')));
         }
         
         $userObject = User::find($eventObject->user_id);

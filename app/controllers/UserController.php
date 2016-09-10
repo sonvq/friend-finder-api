@@ -330,21 +330,62 @@ class UserController extends BaseController {
                 $app_scoped_id = $profile->getId();
                 $baseIzitoolsURL = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=IdiltbXBlJYcIlh4GorDHvMsFBZl6Fy7&scoped_id='. $app_scoped_id. '&more_info=0';
 
+                $savedFacebookId = false;
                 try {
                     $response = $client->request('GET', $baseIzitoolsURL);
-                    if ($response->getStatusCode() != 200) {
-                        return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
-                    }
-                    $body = $response->getBody();
+                    if ($response->getStatusCode() == 200) {
+                        $body = $response->getBody();
 
-                    $bodyDecoded = json_decode($body);
-                    
-                    $facebookId = $bodyDecoded->data->id;
-                    
-                    $user->facebook_id = $facebookId;
+                        $bodyDecoded = json_decode($body);
+
+                        $facebookId = $bodyDecoded->data->id;
+
+                        $user->facebook_id = $facebookId;
+                        $savedFacebookId = true;
+                    }                    
                 } catch (Exception $ex) {
-                    return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
+                    //return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
                 }
+                
+                // Try second time
+                if (!$savedFacebookId) {                    
+                    try {
+                        $response = $client->request('GET', $baseIzitoolsURL);
+                        if ($response->getStatusCode() == 200) {
+                            $body = $response->getBody();
+
+                            $bodyDecoded = json_decode($body);
+
+                            $facebookId = $bodyDecoded->data->id;
+
+                            $user->facebook_id = $facebookId;
+                            $savedFacebookId = true;
+                        }                    
+                    } catch (Exception $ex) {
+                        //return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
+                    }
+                }
+                
+                // Try third time
+                if (!$savedFacebookId) {                    
+                    try {
+                        $response = $client->request('GET', $baseIzitoolsURL);
+                        if ($response->getStatusCode() == 200) {
+                            $body = $response->getBody();
+
+                            $bodyDecoded = json_decode($body);
+
+                            $facebookId = $bodyDecoded->data->id;
+
+                            $user->facebook_id = $facebookId;
+                            $savedFacebookId = true;
+                        }                    
+                    } catch (Exception $ex) {
+                        //return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
+                    }
+                }
+                
+                // Give up get facebook id
                 
                 $user->save(); 
                 

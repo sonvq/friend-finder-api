@@ -84,5 +84,40 @@ class EventModel extends BaseModel {
         // only get active event
         $query->where('r.end_date', '>', date("Y-m-d H:i:s"));
     }
+    
+    public static function getAllMyEvents (array $where = array(), array $sort = array(), $limit = 10, $offset = 0) {        
+        
+        $query = DB::table(static::$_table . ' as r');
+        
+        $query->select('r.*');
+                
+        if (isset($where['token'])) {
+            if (!empty($where['token'])) {
+                $user = Token::userFor ( $where['token'] );                
+                $query->where('r.user_id', $user->_id);
+            }
+            unset($where['token']);
+        }
+        
+        foreach ($where as $key => $value) {
+            if (is_array($value)) {
+                $query->whereIn('r.' . $key, $value);    
+            } else {
+                $query->where('r.' . $key, $value);
+            }
+        }
+        
+        foreach ($sort as $key => $value) {
+            $query->orderBy('r.' . $key, $value);    
+        }
+        
+        if ($limit) {
+            $query->skip($offset);
+            $query->take($limit);
+        }
+        
+        return $query->get();
+    }
+    
 
 }
