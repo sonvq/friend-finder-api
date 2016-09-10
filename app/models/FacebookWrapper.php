@@ -16,12 +16,13 @@ class FacebookWrapper {
 	 */
 	public $session = NULL;
 
-	public function __construct() {
+	public function __construct($appSecretProof = false) {
 		FacebookSession::setDefaultApplication(
 				Config::get('social.facebook.app_id'), 
 				Config::get('social.facebook.app_secret')
 			);
-		FacebookSession::enableAppSecretProof( Config::get('social.facebook.app_secret_proof') );
+        
+        FacebookSession::enableAppSecretProof($appSecretProof); 		
 	}
 
 	public function loginAsUser( $access_token ) {

@@ -192,7 +192,7 @@ class UserController extends BaseController {
 
     public function mutual() {
         $input = Input::all();
-        $facebook = new FacebookWrapper();
+        $facebook = new FacebookWrapper(true);
         $facebook->loginAsUser($input['access_token']);
 
         try {
