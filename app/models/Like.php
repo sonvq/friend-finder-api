@@ -11,7 +11,8 @@ class Like extends BaseModel {
 
     protected static $updateRules = array(
         'user_id' => 'required',
-        'is_profile' => 'required|in:0,1'
+        'is_accepted' => 'in:-1,0,1',
+        'status' => 'in:like,unlike'
     );
 
     public static function getCreateRules($input) {
