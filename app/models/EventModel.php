@@ -39,7 +39,7 @@ class EventModel extends BaseModel {
     {
         $user = Token::userFor ( Input::get('token') );
         
-        $query->addSelect(DB::raw('(SELECT count(likes._id) FROM likes WHERE likes.event_id = r._id AND likes.user_id = ' . $user->_id . ') as user_liked_event'));
+        $query->addSelect(DB::raw('(SELECT count(likes._id) FROM likes WHERE likes.event_id = r._id AND likes.user_id = ' . $user->_id . ') as user_liked_disliked_event'));
         
         if (isset($where['nearby']) && $where['nearby'] > 0 ) {            
             if (isset($where['user_longitude']) && !empty($where['user_longitude'])) {
@@ -85,7 +85,7 @@ class EventModel extends BaseModel {
         
         // only get active event
         $query->where('r.end_date', '>', date("Y-m-d H:i:s"));
-        $query->having('user_liked_event', '=', 0);
+        $query->having('user_liked_disliked_event', '=', 0);
         
     }
     
