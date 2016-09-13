@@ -66,6 +66,10 @@ class EventController extends BaseController {
                 $userObject->photos;
                 $object->user = $userObject->toArray();
                 $object->event_type_details = EventType::find($object->event_type)->toArray();
+                
+                $object->like_count = count(Like::where('event_id', $object->_id)->where('status', 'like')->get());
+                
+                $object->accepted_count = count(Like::where('event_id', $object->_id)->where('is_accepted', 1)->get());
             }
             
             // TODO: optimize
