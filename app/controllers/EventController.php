@@ -18,7 +18,8 @@ class EventController extends BaseController {
                 $object->user = $userObject->toArray();
                 $object->event_type_details = EventType::find($object->event_type)->toArray();
                 
-                $allLikeObjects = Like::where('event_id', $object->_id)->where('status', 'like')->get();
+                // Lấy về my event các like mà có status = like và is_accepted != -1
+                $allLikeObjects = Like::where('event_id', $object->_id)->where('status', 'like')->where('is_accepted', '!=' , -1)->get();
                 
                 if (count($allLikeObjects) > 0) {
                     foreach ($allLikeObjects as $singleLike) {
