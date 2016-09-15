@@ -16,9 +16,16 @@ class Like extends BaseModel {
     );
 
     public static function getCreateRules($input) {
+        
+        $user_id = null;
+        
+        if (isset($input['user_id']) && !empty($input['user_id'])) {
+            $user_id = $input['user_id'];    
+        } 
+        
         return array(
             'user_id' => 'required',
-            'event_id' => 'required|exists:events,_id|unique:likes,event_id,NULL,_id,user_id,' . $input['user_id'],
+            'event_id' => 'required|exists:events,_id|unique:likes,event_id,NULL,_id,user_id,' . $user_id,
             'status' => 'required|in:like,unlike'
         );
     }

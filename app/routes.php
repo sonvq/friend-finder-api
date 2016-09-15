@@ -72,6 +72,8 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::resource('ratings', 'RatingController');
         
+        Route::resource('conversations', 'ConversationController');
+        
         Route::resource('likes', 'LikeController');
         
         Route::resource('event_types', 'EventTypesController', array('only' => array('index')) );
