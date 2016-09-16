@@ -72,9 +72,36 @@ class LikeController extends BaseController {
                             
         $validator = Validator::make( $input, Like::getUpdateRules() );
 
+        $conversation = null;
 		if ( $validator->passes() ) {
             if (isset($input['is_accepted'])) {
                 $like->is_accepted = $input['is_accepted'];
+                
+                // checking if is_accepted = 1 then create new conversation
+                if ($input['is_accepted'] == 1) {
+                    
+                    // check if the conversation is already existed
+                    $conversationCheck = Conversation::where('creator_id', $user->_id)->where('event_id', $like->event_id)->where('joiner_id', $like->user_id)->first();
+                    
+                    if (!$conversationCheck) {                        
+                        $conversation = new Conversation();                     
+
+                        $conversation->creator_id   = $user->_id;
+                        $conversation->event_id     = $like->event_id;
+                        $conversation->joiner_id    = $like->user_id;            
+
+
+                        if ( !$conversation->save() ) {
+                            return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+                        }
+                        
+                        $conversation->creator = User::find($conversation->creator_id);
+                        $conversation->joiner = User::find($conversation->joiner_id);
+        
+                        $conversation = $conversation->toArray();
+                    }
+                    
+                }
             }
             
             if (isset($input['status'])) {
@@ -91,6 +118,7 @@ class LikeController extends BaseController {
 		}
 
         $returnLike = Like::find($like->_id);
+        $returnLike->conversation = $conversation;
         
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnLike->toArray()));
     }
