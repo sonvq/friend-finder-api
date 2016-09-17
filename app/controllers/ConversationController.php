@@ -6,7 +6,7 @@ class ConversationController extends BaseController {
 
     public function store() {
         $input = Input::all();
-		$event = '';
+		$conversation = '';
         
         $user = Token::userFor ( Input::get('token') );
         if ( empty($user) ) {

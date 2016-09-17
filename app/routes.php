@@ -70,6 +70,8 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::resource('interests', 'InterestController');
         
+        Route::resource('messages', 'MessageController');
+        
         Route::resource('ratings', 'RatingController');
         
         Route::resource('conversations', 'ConversationController');
