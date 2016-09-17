@@ -56,6 +56,62 @@ class ConversationController extends BaseController {
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnConversation->toArray()));
     }
     
+    public function index() {
+        
+        $query = $this->processInput();               
+
+        $currentUser = Token::userFor(Input::get('token'));
+
+        $result = Conversation::getAll($query['where'], $query['sort'], $query['limit'], $query['offset']);                
+                
+        if (count($result) > 0) {
+            // Add User info to event list
+            foreach ($result as $id=>$object) {                
+                $creatorObject = User::find($object->creator_id);
+                $creatorObject->photos;                
+                $object->creator = $creatorObject->toArray();
+                
+                $joinerObject = User::find($object->joiner_id);
+                $joinerObject->photos;                
+                $object->joiner = $joinerObject->toArray();
+                
+                // get the last message from conversation
+                $lastMessage = Message::where('conversation_id', $object->_id)->orderBy('created_at', 'desc')->first();
+                
+                if ($lastMessage) {
+                    if ($lastMessage->sender_id == $currentUser->_id) {
+                        $lastMessage->is_new_message = 0;
+                    } else {
+                        $lastMessage->is_new_message = $lastMessage->is_new;
+                    } 
+                }
+                
+                $object->last_message = $lastMessage;
+                
+//                $object->like_count = count(Like::where('event_id', $object->_id)->where('status', 'like')->get());
+//                
+//                $object->accepted_count = count(Like::where('event_id', $object->_id)->where('is_accepted', 1)->get());
+            }
+            
+            // TODO: optimize
+            foreach ($result as $id=>$object) {
+                if(!empty($query['fields'])) {
+                    foreach ($object as $key=>$value) {
+                        if(in_array($key, $query['fields'])) {
+                            continue;
+                        } else {
+                            unset($object->$key);
+                        }
+                    }
+                }                
+            }
+                        
+        }
+
+        return ApiResponse::json(Helper::successResponseFormat(null, $result));
+
+	}
+    
 	public function missingMethod( $parameters = array() )
 	{
 	    return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no method found')));
