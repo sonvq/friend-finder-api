@@ -61,6 +61,63 @@ class MessageController extends BaseController {
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnMessage->toArray()));
     }
     
+    public function index() {
+        $input = Input::all();
+        
+        $query = $this->processInput();               
+
+        $currentUser = Token::userFor(Input::get('token'));
+        
+        if (!isset($input['conversation_id']) || empty($input['conversation_id'])) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Conversation found!')));
+        }
+        
+        $conversation = Conversation::where('_id', $input['conversation_id'])->first();
+        if (empty($conversation)) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Conversation found!')));
+        }
+        
+        if (($conversation->creator_id != $currentUser->_id) && ($conversation->joiner_id != $currentUser->_id)) {
+            return ApiResponse::errorForbidden(Helper::failResponseFormat(array('Permission denied!')));
+        }
+
+        $result = Message::getAll($query['where'], $query['sort'], $query['limit'], $query['offset']);                
+                
+        if (count($result) > 0) {
+            // Add User info to event list
+            foreach ($result as $id=>$object) {                
+                $sender = User::find($object->sender_id);
+                $sender->photos;
+                
+                $object->sender = $sender->toArray();
+                
+                // mark message is_new = 0 if sender_id != current user id
+                $message = Message::find($object->_id);
+                if ($message->sender_id != $currentUser->_id) {
+                    $message->is_new = 0;
+                    $message->save();
+                }
+            }
+            
+            // TODO: optimize
+            foreach ($result as $id=>$object) {
+                if(!empty($query['fields'])) {
+                    foreach ($object as $key=>$value) {
+                        if(in_array($key, $query['fields'])) {
+                            continue;
+                        } else {
+                            unset($object->$key);
+                        }
+                    }
+                }                
+            }
+                        
+        }
+
+        return ApiResponse::json(Helper::successResponseFormat(null, $result));
+
+	}
+    
 	public function missingMethod( $parameters = array() )
 	{
 	    return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no method found')));

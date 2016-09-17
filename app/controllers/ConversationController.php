@@ -88,9 +88,6 @@ class ConversationController extends BaseController {
                 
                 $object->last_message = $lastMessage;
                 
-//                $object->like_count = count(Like::where('event_id', $object->_id)->where('status', 'like')->get());
-//                
-//                $object->accepted_count = count(Like::where('event_id', $object->_id)->where('is_accepted', 1)->get());
             }
             
             // TODO: optimize
