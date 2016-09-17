@@ -33,7 +33,12 @@ class Conversation extends BaseModel {
     {       
         
         // only get event of other users
-        if (isset($where['token'])) {            
+        if (isset($where['token'])) {
+            if (!empty($where['token'])) {
+                $user = Token::userFor ( $where['token'] );                
+                $query->where('r.creator_id', $user->_id);
+                $query->orWhere('r.joiner_id', $user->_id);
+            }
             unset($where['token']);
         }
         

@@ -112,6 +112,32 @@ class ConversationController extends BaseController {
 
 	}
     
+    public function notification() {
+        $user = Token::userFor ( Input::get('token') );
+        if ( empty($user) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
+        }
+        
+        $countNotification = 0;
+        // get conversation list by user id
+        $conversationList = Conversation::where('creator_id', $user->_id)->orWhere('joiner_id', $user->_id)->get();
+        
+        if (count($conversationList) > 0) {
+            foreach($conversationList as $singleConversation) {
+                // get new message by conversation id
+                $listNewMessage = Message::where('conversation_id', $singleConversation->_id)->where('sender_id', '!=', $user->_id)->where('is_new', 1)->get();
+                if (count($listNewMessage) > 0) {
+                    $countNotification++;
+                }
+            }
+        }
+        
+        $result = array();
+        
+        $result['notification_count'] = $countNotification;
+        return ApiResponse::json(Helper::successResponseFormat(null, $result));
+    }
+    
 	public function missingMethod( $parameters = array() )
 	{
 	    return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Sorry, no method found')));

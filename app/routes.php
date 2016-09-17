@@ -74,7 +74,9 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::resource('ratings', 'RatingController');
         
-        Route::resource('conversations', 'ConversationController');
+        Route::get('conversations/notification',  array('as' => 'v1.conversations.notification', 'uses' => 'ConversationController@notification') );
+        
+        Route::resource('conversations', 'ConversationController');        
         
         Route::resource('likes', 'LikeController');
         
