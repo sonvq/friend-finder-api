@@ -15,6 +15,22 @@ class EventController extends BaseController {
             foreach ($result as $id=>$object) {                
                 $userObject = User::find($object->user_id);
                 $userObject->photos;
+                
+                // get rating for userObject
+                $allRating = Rating::where('receiver_id', $userObject->_id)->get();
+                $ratingNumber = 0;
+                if (count($allRating) > 0) {
+                    $sumRating = 0;
+                    $count = 0;
+                    foreach($allRating as $singleRating) {
+                        $sumRating = $sumRating + $singleRating->rating;
+                        $count++;
+                    }
+                    $ratingNumber = number_format ($sumRating/$count, 2);
+                } 
+                
+                $userObject->average_rating = $ratingNumber;
+                
                 $object->user = $userObject->toArray();
                 $object->event_type_details = EventType::find($object->event_type)->toArray();
                 
@@ -65,6 +81,22 @@ class EventController extends BaseController {
             foreach ($result as $id=>$object) {                
                 $userObject = User::find($object->user_id);
                 $userObject->photos;
+                
+                // get rating for userObject
+                $allRating = Rating::where('receiver_id', $userObject->_id)->get();
+                $ratingNumber = 0;
+                if (count($allRating) > 0) {
+                    $sumRating = 0;
+                    $count = 0;
+                    foreach($allRating as $singleRating) {
+                        $sumRating = $sumRating + $singleRating->rating;
+                        $count++;
+                    }
+                    $ratingNumber = number_format ($sumRating/$count, 2);
+                } 
+                
+                $userObject->average_rating = $ratingNumber;
+                
                 $object->user = $userObject->toArray();
                 $object->event_type_details = EventType::find($object->event_type)->toArray();
                 
