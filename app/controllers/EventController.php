@@ -26,10 +26,10 @@ class EventController extends BaseController {
                         $sumRating = $sumRating + $singleRating->rating;
                         $count++;
                     }
-                    $ratingNumber = number_format ($sumRating/$count, 2);
+                    $ratingNumber = $sumRating/$count;
                 } 
                 
-                $userObject->average_rating = $ratingNumber;
+                $userObject->average_rating = (double)$ratingNumber;
                 
                 $object->user = $userObject->toArray();
                 $object->event_type_details = EventType::find($object->event_type)->toArray();
@@ -92,10 +92,10 @@ class EventController extends BaseController {
                         $sumRating = $sumRating + $singleRating->rating;
                         $count++;
                     }
-                    $ratingNumber = number_format ($sumRating/$count, 2);
+                    $ratingNumber = $sumRating/$count;
                 } 
                 
-                $userObject->average_rating = $ratingNumber;
+                $userObject->average_rating = (double)$ratingNumber;
                 
                 $object->user = $userObject->toArray();
                 $object->event_type_details = EventType::find($object->event_type)->toArray();
