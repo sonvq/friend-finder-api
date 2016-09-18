@@ -10,16 +10,27 @@ class Rating extends BaseModel {
     
     public function user() {
         return $this->belongsTo('User');
-    }    
-    
-    protected static $createRules = array(
-        'receiver_id'       => 'required|numeric|already_exist_rating|valid_user',
-        'sender_id'         => 'required|numeric',
-        'rating'            => 'required|integer|min:1|max:5'
-    );
+    }        
 
-    public static function getCreateRules() {
-        return self::$createRules;
+    public static function getCreateRules($input) {
+        $event_id = null;
+        
+        if (isset($input['event_id']) && !empty($input['event_id'])) {
+            $event_id = $input['event_id'];    
+        } 
+        
+        $receiver_id = null;
+        
+        if (isset($input['receiver_id']) && !empty($input['receiver_id'])) {
+            $receiver_id = $input['receiver_id'];    
+        }        
+        
+        return array(
+            'receiver_id' => 'required|numeric|already_exist_rating:' . $event_id. '|valid_user',
+            'sender_id' => 'required|numeric',
+            'rating' => 'required|integer|in:1,2,3,4,5',
+            'event_id' => 'required|event_has_finished|liked_each_other:' . $receiver_id
+        );
     }
     
     

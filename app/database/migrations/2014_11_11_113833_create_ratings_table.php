@@ -13,8 +13,9 @@ class CreateRatingsTable extends Migration {
     public function up() {
         Schema::create('ratings', function(Blueprint $table) {
             $table->increments('_id');
-            $table->integer('sender_id')->unsigned()->index();
-            $table->integer('receiver_id')->unsigned()->index();
+            $table->integer('event_id')->unsigned()->index();
+            $table->integer('sender_id');
+            $table->integer('receiver_id');            
             $table->integer('rating');
             $table->timestamps();
         });
