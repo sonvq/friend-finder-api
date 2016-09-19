@@ -593,6 +593,22 @@ class UserController extends BaseController {
         $user->photos;
         $user->instagrams;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
+        
+        // get rating for userObject
+        $allRating = Rating::where('receiver_id', $user->_id)->get();
+        $ratingNumber = 0;
+        if (count($allRating) > 0) {
+            $sumRating = 0;
+            $count = 0;
+            foreach($allRating as $singleRating) {
+                $sumRating = $sumRating + $singleRating->rating;
+                $count++;
+            }
+            $ratingNumber = $sumRating/$count;
+        } 
+
+        $user->average_rating = (double)$ratingNumber;
+
 
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
@@ -672,6 +688,22 @@ class UserController extends BaseController {
         $user->photos;
         $user->instagrams;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
+        
+        // get rating for userObject
+        $allRating = Rating::where('receiver_id', $user->_id)->get();
+        $ratingNumber = 0;
+        if (count($allRating) > 0) {
+            $sumRating = 0;
+            $count = 0;
+            foreach($allRating as $singleRating) {
+                $sumRating = $sumRating + $singleRating->rating;
+                $count++;
+            }
+            $ratingNumber = $sumRating/$count;
+        } 
+
+        $user->average_rating = (double)$ratingNumber;
+        
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
 
