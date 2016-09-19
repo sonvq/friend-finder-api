@@ -48,20 +48,25 @@ class InstagramController extends BaseController {
             
             $userInstagramMedia = $instagram->getUserMedia('self', 24);
             
-            if (is_array($userInstagramMedia->data) && count($userInstagramMedia->data) > 0) {
-                $arrayImages = $userInstagramMedia->data;
-                foreach ($arrayImages as $singleImage) {
-                    $imagesSizes = $singleImage->images;
-                    
-                    $newInstagram = new Instagram();
-                    $newInstagram->user_id = $user->_id;
-                    $newInstagram->low_resolution = $imagesSizes->low_resolution->url;
-                    $newInstagram->thumbnail = $imagesSizes->thumbnail->url;
-                    $newInstagram->standard_resolution = $imagesSizes->standard_resolution->url;
+            $countInstagramPhotosLeft = Instagram::where('user_id', '=', $user->_id)->get();
+            
+            if (count($countInstagramPhotosLeft) == 0) {
+                if (is_array($userInstagramMedia->data) && count($userInstagramMedia->data) > 0) {
+                    $arrayImages = $userInstagramMedia->data;
+                    foreach ($arrayImages as $singleImage) {
+                        $imagesSizes = $singleImage->images;
 
-                    $newInstagram->save();
+                        $newInstagram = new Instagram();
+                        $newInstagram->user_id = $user->_id;
+                        $newInstagram->low_resolution = $imagesSizes->low_resolution->url;
+                        $newInstagram->thumbnail = $imagesSizes->thumbnail->url;
+                        $newInstagram->standard_resolution = $imagesSizes->standard_resolution->url;
+
+                        $newInstagram->save();
+                    }
                 }
             }
+            
 		}
 		else {
 			$error = Helper::getErrorMessageValidation($validator);
