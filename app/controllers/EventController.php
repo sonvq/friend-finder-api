@@ -144,7 +144,7 @@ class EventController extends BaseController {
         
         if ($userHasPlus == false) {
             if (count($countEventCreated) >= 1) {
-                return ApiResponse::errorForbidden(Helper::failResponseFormat (array('Normal user can only create 1 event per day')));
+                return ApiResponse::errorForbidden(Helper::failResponseFormat (array('Normal user can only create 1 event per day, upgrade your account to plus!')));
             }
         }
         

@@ -13,6 +13,13 @@ class MessageController extends BaseController {
             return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
         }
        
+        // Check user is account plus or not
+        $plus = Plus::where('user_id', $user->_id)->where('end_date', '>=', date("Y-m-d H:i:s"))->first();
+        $userHasPlus = false;
+        if ($plus) {
+            $userHasPlus = true;    
+        }
+        
         $input['sender_id'] = $user->_id;
         
         Validator::extend('validate_sender_id', function($attribute, $value, $parameters)
@@ -37,6 +44,15 @@ class MessageController extends BaseController {
 
 		if ( $validator->passes() ) {
 
+            // count message in conversation
+            $countMessageCreated = Message::where('conversation_id', $input['conversation_id'])->where('sender_id', $user->_id)->get();
+            
+            if ($userHasPlus == false) {
+                if (count($countMessageCreated) >= 10) {
+                    return ApiResponse::errorForbidden(Helper::failResponseFormat (array('Normal user can only send maximum of 10 messages, upgrade your account to plus!')));
+                }
+            }
+                    
 			$message = new Message();                     
         
 			$message->sender_id = $input['sender_id'];
