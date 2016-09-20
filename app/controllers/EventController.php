@@ -132,7 +132,22 @@ class EventController extends BaseController {
         if ( empty($user) ) {
             return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
         }
+        
+        // Check user is account plus or not
+        $plus = Plus::where('user_id', $user->_id)->where('end_date', '>=', date("Y-m-d H:i:s"))->first();
+        $userHasPlus = false;
+        if ($plus) {
+            $userHasPlus = true;    
+        }
 
+        $countEventCreated = EventModel::where('user_id', $user->_id)->where('created_at', '>=', date("Y-m-d 00:00:00"))->where('created_at', '<=', date("Y-m-d 23:59:59"))->get();
+        
+        if ($userHasPlus == false) {
+            if (count($countEventCreated) >= 1) {
+                return ApiResponse::errorForbidden(Helper::failResponseFormat (array('Normal user can only create 1 event per day')));
+            }
+        }
+        
         Validator::extend('greater_than', function($attribute, $value, $parameters)
         {
             $other = Input::get($parameters[0]);
