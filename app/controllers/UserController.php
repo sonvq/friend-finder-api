@@ -594,6 +594,14 @@ class UserController extends BaseController {
         $user->instagrams;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
         
+        // Check is plus user
+        $plus = Plus::where('user_id', $user->_id)->where('end_date', '>=', date("Y-m-d H:i:s"))->first();
+        $userHasPlus = 0;
+        if ($plus) {
+            $userHasPlus = 1;    
+        }
+        $user->is_plus = $userHasPlus;
+        
         // get rating for userObject
         $allRating = Rating::where('receiver_id', $user->_id)->get();
         $ratingNumber = 0;
@@ -688,6 +696,14 @@ class UserController extends BaseController {
         $user->photos;
         $user->instagrams;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
+        
+        // Check is plus user
+        $plus = Plus::where('user_id', $user->_id)->where('end_date', '>=', date("Y-m-d H:i:s"))->first();
+        $userHasPlus = 0;
+        if ($plus) {
+            $userHasPlus = 1;    
+        }
+        $user->is_plus = $userHasPlus;
         
         // get rating for userObject
         $allRating = Rating::where('receiver_id', $user->_id)->get();
