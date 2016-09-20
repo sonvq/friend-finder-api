@@ -73,6 +73,26 @@ class EventController extends BaseController {
         
         $query = $this->processInput();               
 
+        $user = Token::userFor ( Input::get('token') );
+        if ( empty($user) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
+        }
+       
+        // Check user is account plus or not
+        $plus = Plus::where('user_id', $user->_id)->where('end_date', '>=', date("Y-m-d H:i:s"))->first();
+        $userHasPlus = false;
+        if ($plus) {
+            $userHasPlus = true;    
+        }
+        
+        $input = Input::all();
+        
+        if ($userHasPlus == false) {
+            if (isset($input['city_id'])) {
+                return ApiResponse::errorForbidden(Helper::failResponseFormat (array('Normal user can not search event by city, upgrade your account to plus!')));
+            }
+        }
+        
         $result = EventModel::getAll($query['where'], $query['sort'], $query['limit'], $query['offset']);
         
         
