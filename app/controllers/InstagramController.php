@@ -45,7 +45,7 @@ class InstagramController extends BaseController {
                 foreach ($existingInstagramPhotos as $singlePhoto) {
                     $singlePhoto->delete();
                 }
-                sleep(2);
+                sleep(3);
             }
             
             $userInstagramMedia = $instagram->getUserMedia('self', 24);
