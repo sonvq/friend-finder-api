@@ -7,6 +7,7 @@ class InstagramController extends BaseController {
 	public $restful = true;
     
     public function connect() {
+        sleep(2);
         $input = Input::all();
         
         $user = Token::userFor ( Input::get('token') );
@@ -44,39 +45,36 @@ class InstagramController extends BaseController {
                 foreach ($existingInstagramPhotos as $singlePhoto) {
                     $singlePhoto->delete();
                 }
+                sleep(2);
             }
             
             $userInstagramMedia = $instagram->getUserMedia('self', 24);
             
-            $countInstagramPhotosLeft = Instagram::where('user_id', '=', $user->_id)->get();
-            
-            if (count($countInstagramPhotosLeft) == 0) {
-                if (is_array($userInstagramMedia->data) && count($userInstagramMedia->data) > 0) {
-                    $arrayImages = $userInstagramMedia->data;
-                    foreach ($arrayImages as $singleImage) {
-                        $imagesSizes = $singleImage->images;
+            if (is_array($userInstagramMedia->data) && count($userInstagramMedia->data) > 0) {
+                $arrayImages = $userInstagramMedia->data;
+                foreach ($arrayImages as $singleImage) {
+                    $imagesSizes = $singleImage->images;
+                    
+                    $newInstagram = new Instagram();
+                    $newInstagram->user_id = $user->_id;
+                    $newInstagram->low_resolution = $imagesSizes->low_resolution->url;
+                    $newInstagram->thumbnail = $imagesSizes->thumbnail->url;
+                    $newInstagram->standard_resolution = $imagesSizes->standard_resolution->url;
 
-                        $newInstagram = new Instagram();
-                        $newInstagram->user_id = $user->_id;
-                        $newInstagram->low_resolution = $imagesSizes->low_resolution->url;
-                        $newInstagram->thumbnail = $imagesSizes->thumbnail->url;
-                        $newInstagram->standard_resolution = $imagesSizes->standard_resolution->url;
-
-                        $newInstagram->save();
-                    }
+                    $newInstagram->save();
                 }
             }
-            
 		}
 		else {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}        
-        
+        sleep(2);
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
     }
     
     public function disconnect() {
+        sleep(2);
         $input = Input::all();
         
         $user = Token::userFor ( Input::get('token') );
@@ -100,7 +98,7 @@ class InstagramController extends BaseController {
                 $singlePhoto->delete();
             }
         }
-        
+        sleep(2);
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
     }
 	    
