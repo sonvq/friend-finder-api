@@ -39,14 +39,10 @@ class InstagramController extends BaseController {
 				return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
             }
             
-            $existingInstagramPhotos = Instagram::where('user_id', '=', $user->_id)->get();
+            // Delete old instagram images of $user->_id
+            $affected = Instagram::where('user_id', '=', $user->_id)->delete();
             
-            if (count($existingInstagramPhotos) > 0) {
-                foreach ($existingInstagramPhotos as $singlePhoto) {
-                    $singlePhoto->delete();
-                }
-                sleep(3);
-            }
+            sleep(3);
             
             $userInstagramMedia = $instagram->getUserMedia('self', 24);
             
@@ -91,14 +87,10 @@ class InstagramController extends BaseController {
         }
 
         // Remove all instagram photos
-        $existingInstagramPhotos = Instagram::where('user_id', '=', $user->_id)->get();
-
-        if (count($existingInstagramPhotos) > 0) {
-            foreach ($existingInstagramPhotos as $singlePhoto) {
-                $singlePhoto->delete();
-            }
-        }
+        $affected = Instagram::where('user_id', '=', $user->_id)->delete();
+        
         sleep(2);
+        
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
     }
 	    
