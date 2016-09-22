@@ -36,7 +36,7 @@ class UserController extends BaseController {
 		else {
 			return ApiResponse::validation($validator);
 		}
-		Log::info('<!> Created : '.$user);
+		//Log::info('<!> Created : '.$user);
 
 		return ApiResponse::json($user);
 	}
@@ -80,7 +80,7 @@ class UserController extends BaseController {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
-		Log::info('<!> Updated : '.$user);
+		//Log::info('<!> Updated : '.$user);
 
 		$user->photos;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
@@ -110,8 +110,8 @@ class UserController extends BaseController {
 
 				$token = $user->login( $device_id, $device_type, $device_token );
 
-				Log::info('<!> Device Token Received : '. $device_token .' - Device ID Received : '. $device_id .' for user id: '.$token->user_id);
-				Log::info('<!> Logged : '.$token->user_id.' on '.$token->device_os.'['.$token->device_id.'] with token '.$token->key);
+				//Log::info('<!> Device Token Received : '. $device_token .' - Device ID Received : '. $device_id .' for user id: '.$token->user_id);
+				//Log::info('<!> Logged : '.$token->user_id.' on '.$token->device_os.'['.$token->device_id.'] with token '.$token->key);
 				
 				$token->user = $user->toArray();
 				$token = ApiResponse::json($token, '202');
@@ -175,7 +175,7 @@ class UserController extends BaseController {
                 return ApiResponse::errorValidation(Helper::failResponseFormat($error));
             }
             
-			Log::info( json_encode( $profile->asArray() ) );
+			//Log::info( json_encode( $profile->asArray() ) );
             if (isset($profile->asArray()['photos'])) {
                 return ApiResponse::json(Helper::successResponseFormat(null, $profile->asArray()['photos']));    
             } else {
@@ -248,7 +248,7 @@ class UserController extends BaseController {
                 return ApiResponse::errorValidation(Helper::failResponseFormat($error));
             }
 
-			Log::info( json_encode( $profile->asArray() ) );
+			//Log::info( json_encode( $profile->asArray() ) );
 
 			$user = User::where('facebook_id', '=', $profile->getId() )->first();
 			
@@ -439,7 +439,7 @@ class UserController extends BaseController {
                         return ApiResponse::errorValidation(Helper::failResponseFormat($error));
                     }
 
-                    Log::info(json_encode($profile->asArray()));
+                    //Log::info(json_encode($profile->asArray()));
 
                     $profilePhotosArray = $profilePhotos->getProperty('photos')->asArray();
 
@@ -469,14 +469,14 @@ class UserController extends BaseController {
 
 			$token = $user->login( $device_id, $device_type, $device_token );
 			
-			Log::info('<!> Device Token Received : '. $device_token .' - Device ID Received : '. $device_id .' for user id: '.$token->user_id);
-			Log::info('<!> FACEBOOK Logged : '.$token->user_id.' on '.$token->device_os.'['.$token->device_id.'] with token '.$token->token);
+			//Log::info('<!> Device Token Received : '. $device_token .' - Device ID Received : '. $device_id .' for user id: '.$token->user_id);
+			//Log::info('<!> FACEBOOK Logged : '.$token->user_id.' on '.$token->device_os.'['.$token->device_id.'] with token '.$token->token);
 
 			$token = $token->toArray();                                          
             
 			$token['user'] = $user->toArray();
 
-			Log::info( json_encode($token) );
+			//Log::info( json_encode($token) );
 			
 			return ApiResponse::json(Helper::successResponseFormat(null, $token));
 		}
@@ -566,7 +566,7 @@ class UserController extends BaseController {
 		if ( $token->user_id !== $user->_id ) return ApiResponse::errorForbidden('You do not own this token.');
 
 		if ( $token->delete() ){
-			Log::info('<!> Logged out from : '.$input_token );
+			//Log::info('<!> Logged out from : '.$input_token );
 			return ApiResponse::json('User logged out successfully.', '202');
 		}	
 		else
@@ -636,7 +636,7 @@ class UserController extends BaseController {
 			$sent = false;
 
 			if ( $reset->save() ){
-				Log::info($reset);
+				//Log::info($reset);
 				$sent = EmailTrigger::send( 'lost_password', $reset );
 			}
 

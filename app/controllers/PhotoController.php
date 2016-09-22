@@ -74,7 +74,7 @@ class PhotoController extends BaseController {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
-		Log::info('<!> Created : '.$photo);
+		//Log::info('<!> Created : '.$photo);
         $returnPhoto = Photo::find($photo->_id);
         
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnPhoto->toArray()));
@@ -122,7 +122,7 @@ class PhotoController extends BaseController {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
-		Log::info('<!> Updated : '.$photo);
+		//Log::info('<!> Updated : '.$photo);
         $returnPhoto = Photo::find($photo->_id);
         
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnPhoto->toArray()));

@@ -241,7 +241,7 @@ class EventController extends BaseController {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}
-		Log::info('<!> Created : '.$event);
+		// Log::info('<!> Created : '.$event);
         $returnEvent = EventModel::find($event->_id);
         $returnEvent->user;
         
