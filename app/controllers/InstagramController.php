@@ -41,7 +41,7 @@ class InstagramController extends BaseController {
             }
             
             // Delete old instagram images of $user->_id
-            //$affected = Instagram::where('user_id', '=', $user->_id)->delete();
+            $affected = Instagram::where('user_id', '=', $user->_id)->delete();
             
             sleep(1);
             
