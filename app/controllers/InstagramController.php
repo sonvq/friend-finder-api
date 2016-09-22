@@ -7,7 +7,8 @@ class InstagramController extends BaseController {
 	public $restful = true;
     
     public function connect() {
-        sleep(2);
+        Log::info('<***> Instagram connect called');
+        sleep(1);
         $input = Input::all();
         
         $user = Token::userFor ( Input::get('token') );
@@ -40,9 +41,9 @@ class InstagramController extends BaseController {
             }
             
             // Delete old instagram images of $user->_id
-            $affected = Instagram::where('user_id', '=', $user->_id)->delete();
+            //$affected = Instagram::where('user_id', '=', $user->_id)->delete();
             
-            sleep(3);
+            sleep(1);
             
             $userInstagramMedia = $instagram->getUserMedia('self', 24);
             
@@ -56,8 +57,16 @@ class InstagramController extends BaseController {
                     $newInstagram->low_resolution = $imagesSizes->low_resolution->url;
                     $newInstagram->thumbnail = $imagesSizes->thumbnail->url;
                     $newInstagram->standard_resolution = $imagesSizes->standard_resolution->url;
-
-                    $newInstagram->save();
+                    
+                    try {
+                        $newInstagram->save();
+                    } catch (Illuminate\Database\QueryException $e){
+                        $errorCode = $e->errorInfo[1];
+                        if($errorCode == 1062){
+                            // echo 'hehe';
+                            // houston, we have a duplicate entry problem
+                        }
+                    }
                 }
             }
 		}
@@ -65,12 +74,13 @@ class InstagramController extends BaseController {
 			$error = Helper::getErrorMessageValidation($validator);
 			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
 		}        
-        sleep(2);
+        sleep(1);
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
     }
     
     public function disconnect() {
-        sleep(2);
+        Log::info('<***> Instagram disconnect called');
+        sleep(1);
         $input = Input::all();
         
         $user = Token::userFor ( Input::get('token') );
@@ -89,7 +99,7 @@ class InstagramController extends BaseController {
         // Remove all instagram photos
         $affected = Instagram::where('user_id', '=', $user->_id)->delete();
         
-        sleep(2);
+        sleep(1);
         
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
     }

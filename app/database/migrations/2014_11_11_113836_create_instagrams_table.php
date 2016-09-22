@@ -14,7 +14,7 @@ class CreateInstagramsTable extends Migration {
         Schema::create('instagrams', function(Blueprint $table) {
             $table->increments('_id');
             $table->integer('user_id')->unsigned()->index();
-            $table->string('low_resolution');
+            $table->string('low_resolution')->unique();
             $table->string('thumbnail');
             $table->string('standard_resolution');
             $table->timestamps();
