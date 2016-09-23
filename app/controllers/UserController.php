@@ -514,10 +514,20 @@ class UserController extends BaseController {
                 "verify_peer_name" => false,
             ),
         );
-
+                        
+        
         $profileImageSaveLinkFull = public_path() . $profileImageSaveLink;
-        file_put_contents($profileImageSaveLinkFull, file_get_contents($imageLink, false, stream_context_create($arrContextOptions)));
+        
+        // Do not use file put content and file get content anymore, using guzzleHttp instead
+//        file_put_contents($profileImageSaveLinkFull, file_get_contents($imageLink, false, stream_context_create($arrContextOptions)));
 
+        $client = new \GuzzleHttp\Client();
+        try {
+            $client->request('GET', $imageLink, ['sink' => $profileImageSaveLinkFull]);
+        } catch (Exception $ex) {
+            
+        }
+        
         $downloadedImageSize = getimagesize($profileImageSaveLinkFull);
 
         if ($downloadedImageSize[0] > 1200 || $downloadedImageSize[1] > 1200) {
