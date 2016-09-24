@@ -274,7 +274,7 @@ class UserController extends BaseController {
 
 			$facebook = new FacebookWrapper();
 			$facebook->loginAsUser( $input['access_token'] );
-
+            Log::info( 'A user call signed in with input: ' . json_encode( $input ) );
             /*
              * Scope email => email
              * Scope user_photos => select 4 images
