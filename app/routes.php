@@ -19,6 +19,7 @@ Route::model('users', 'User');
 |
 */
 
+Route::pattern('id', '[0-9]+');
 
 Route::get('/', function()
 {
@@ -68,6 +69,8 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::resource('photos', 'PhotoController');
         
+        Route::post('photos/{id}/update', array('as' => 'v1.photos.update', 'uses' => 'PhotoController@updatePhoto'));
+
         Route::resource('interests', 'InterestController');
         
         Route::resource('messages', 'MessageController');
@@ -79,6 +82,7 @@ Route::group(array('prefix' => 'v1'), function(){
         Route::resource('conversations', 'ConversationController');        
         
         Route::resource('likes', 'LikeController');
+        Route::post('likes/{id}/update', array('as' => 'v1.likes.update', 'uses' => 'LikeController@updateLike'));
         
         Route::resource('plus', 'PlusController');
         
@@ -97,6 +101,7 @@ Route::group(array('prefix' => 'v1'), function(){
 
             Route::get('show',          array('as' => 'v1.users.show',      'uses' => 'UserController@show') );
             Route::post('logout',       array('as' => 'v1.users.logout',    'uses' => 'UserController@logout') );
+            Route::post('update',       array('as' => 'v1.users.update',    'uses' => 'UserController@updateUser') );
 
         });
 

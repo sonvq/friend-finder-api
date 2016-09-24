@@ -86,6 +86,52 @@ class UserController extends BaseController {
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
 		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
 	}
+    
+    public function updateUser($user) {
+
+		$input_token = Input::get('token');
+		$token = Token::where('key', '=', $input_token)->first();
+
+		if ( empty($token) ) {
+            return ApiResponse::errorUnauthorized(Helper::failResponseFormat (array("No active session found.")));
+        }
+
+		if ( $token->user_id !== $user->_id ) {
+            return ApiResponse::errorForbidden(Helper::failResponseFormat(array('You are not allowed to update')));
+        }
+        
+		$input = Input::all();
+
+		$validator = Validator::make( $input, User::getUpdateRules() );
+
+		if ( $validator->passes() ) {
+			
+			$user->longitude            = Input::has('longitude')? $input['longitude'] : null;
+			$user->latitude 			= Input::has('latitude')? $input['latitude'] : null;
+
+            if (isset($input['name']) && !empty($input['name'])) {
+                $user->name = $input['name'];
+            }
+            
+            if (isset($input['about']) && !empty($input['about'])) {
+                $user->about = $input['about'];
+            }
+            
+			if ( !$user->save() ) {
+				return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+            }
+
+		}
+		else {
+			$error = Helper::getErrorMessageValidation($validator);
+			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+		}
+		//Log::info('<!> Updated : '.$user);
+
+		$user->photos;
+        $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
+		return ApiResponse::json(Helper::successResponseFormat(null, $user->toArray()));
+	}
 
 	/**
 	 *	Authenticate a registered user, with its email and password

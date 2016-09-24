@@ -79,6 +79,54 @@ class PhotoController extends BaseController {
         
 		return ApiResponse::json(Helper::successResponseFormat(null, $returnPhoto->toArray()));
     }
+        
+    public function updatePhoto($id) {
+        $input = Input::all();
+        $photo = Photo::where('_id', '=', $id)->first();
+        
+        $user = Token::userFor ( Input::get('token') );
+        if ( empty($user) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
+        } 
+        
+        if ( empty($photo) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('Photo not found.')));
+        } 
+        
+        if ($user->_id != $photo->user_id) {
+            return ApiResponse::errorForbidden(Helper::failResponseFormat(array('You donot own this record')));
+        }                
+        
+        $input['user_id'] = $user->_id;
+		$validator = Validator::make( $input, Photo::getUpdateRules() );
+
+		if ( $validator->passes() ) {            
+            $photo->is_profile = Input::has('is_profile')? $input['is_profile'] : 0;
+         
+            if (isset($input['is_profile']) && $input['is_profile'] == 1) {
+                // Remove old profile image if exist
+                $matchThese = ['user_id' => $user->_id, 'is_profile' => 1];
+
+                $profileImage = Photo::where($matchThese)->first();
+                if ($profileImage) {
+                    $profileImage->is_profile = 0;
+                    $profileImage->save();
+                } 
+            }
+            
+            if (!$photo->save()) {
+                return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+            }
+		}
+		else {
+			$error = Helper::getErrorMessageValidation($validator);
+			return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+		}
+		//Log::info('<!> Updated : '.$photo);
+        $returnPhoto = Photo::find($photo->_id);
+        
+		return ApiResponse::json(Helper::successResponseFormat(null, $returnPhoto->toArray()));
+    }
     
     public function update($id) {
         $input = Input::all();
