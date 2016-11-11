@@ -302,6 +302,9 @@ class UserController extends BaseController {
 				$user = User::where('email', '=', $profile->getProperty('email') )->first();
 
 			if ( !($user instanceof User) ){
+                if (empty($profile->getProperty('email'))) {
+                    return ApiResponse::errorInternal(Helper::failResponseFormat (array('Missing facebook email permission, please provide email permission to register new account')));
+                }
 				// Create an account if none is found
 				$user = new User();
 				$user->firstname = $profile->getFirstName();
