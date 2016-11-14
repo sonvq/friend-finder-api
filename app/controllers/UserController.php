@@ -238,25 +238,61 @@ class UserController extends BaseController {
 
     public function mutual() {
         $input = Input::all();
-        $facebook = new FacebookWrapper(true);
-        $facebook->loginAsUser($input['access_token']);
-
-        try {
-            $context = $facebook->makeRequest('GET', '/' . $input['facebook_id'], array('fields' => 'context{mutual_friends}'), 'v2.7')->execute()->getGraphObject();
-
-            if (is_array($context) && isset($context['error'])) {
-                $error = array($context['error']);
-                return ApiResponse::errorValidation(Helper::failResponseFormat($error));
-            }
-
-            $contextId = $context->getProperty('context')->getProperty('id');
-
-            $friendMutuals = $facebook->makeRequest('GET', '/' . $contextId . '/mutual_friends')->execute()->getGraphObject()->asArray();
-        } catch (Exception $ex) {
-            return ApiResponse::errorValidation(Helper::failResponseFormat($ex->getMessage()));
+        
+        if ( !Input::has('token') ) {
+            return ApiResponse::errorUnauthorized(Helper::failResponseFormat (array("No token given.")));
         }
 
+		$user = Token::userFor ( Input::get('token') );
 
+		if ( empty($user) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));   
+        }
+        
+        if (!Input::has('user_id')) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat (array("user_id field is required!")));
+        }
+        
+        if ($user->_id == $input['user_id']) {
+            return ApiResponse::errorForbidden(Helper::failResponseFormat (array("Given user_id cannot be the same with user_id from token")));
+        }
+
+        // Get friends of first user
+        $friendFirstUser = Friend::where('user_id', $user->_id)->get();
+        
+        // Get friends of second user
+        $friendSecondUser = Friend::where('user_id', $input['user_id'])->get();
+        
+        $friendMutuals = array();
+        $arrayFriendFirstUser = array();
+        $arrayFriendSecondUser = array();
+        
+        if (count($friendFirstUser) > 0 && count($friendSecondUser) > 0) {
+            foreach ($friendFirstUser as $singleFriend) {
+                $arrayFriendFirstUser[$singleFriend->friend_id] = $singleFriend->friend_name;
+            }
+            
+            foreach ($friendSecondUser as $singleFriend) {
+                $arrayFriendSecondUser[$singleFriend->friend_id] = $singleFriend->friend_name;
+            }
+            
+            $sameFriend = array_intersect($arrayFriendFirstUser, $arrayFriendSecondUser);
+            $dataArray = array();
+            if (count($sameFriend) > 0) {
+                foreach ($sameFriend as $key => $value) {
+                    $object = new stdClass();
+                    $object->id = $key;
+                    $object->name = $value;
+                    $dataArray[] = $object;
+                }
+                $friendMutuals['data'] = $dataArray;
+            } else {
+                $friendMutuals['data'] = array();
+            }            
+        } else {
+            // return empty $friendMutuals
+            $friendMutuals['data'] = array();
+        }
         return ApiResponse::json(Helper::successResponseFormat(null, $friendMutuals));
     }
 
@@ -447,6 +483,37 @@ class UserController extends BaseController {
                     }
                 }                
             }       
+            
+            // Get user mutual friends
+            try {
+                $context = $facebook->makeRequest('GET', '/' . $profile->getId(), array('fields' => 'context{mutual_friends}'), 'v2.7')->execute()->getGraphObject();
+
+                if (is_array($context) && isset($context['error'])) {
+                    $error = array($context['error']);
+                    //return ApiResponse::errorValidation(Helper::failResponseFormat($error));
+                } else {
+                    $contextId = $context->getProperty('context')->getProperty('id');
+                    $friendMutuals = $facebook->makeRequest('GET', '/' . $contextId . '/mutual_friends?limit=5000')->execute()->getGraphObject()->asArray();
+                    if (isset($friendMutuals['data']) && !empty($friendMutuals['data'])) {
+                        $arrayFriends = $friendMutuals['data'];
+                        if (count($arrayFriends) > 0) {
+                            DB::transaction(function() use ($arrayFriends, $user) {
+                                $existingFriends = Friend::where('user_id', $user->_id)->delete();
+                                foreach ($arrayFriends as $singleFriend) {
+                                    $friendObject = new Friend();
+                                    $friendObject->user_id = $user->_id;
+                                    $friendObject->friend_id = $singleFriend->id;
+                                    $friendObject->friend_name = $singleFriend->name;
+                                    $friendObject->save();                                    
+                                }
+                            });
+                        }                        
+                    }
+                    
+                }
+            } catch (Exception $ex) {                
+                //return ApiResponse::errorValidation(Helper::failResponseFormat($ex->getMessage()));
+            }
 
             $user->photos;
             $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
