@@ -296,7 +296,7 @@ class UserController extends BaseController {
 
 			//Log::info( json_encode( $profile->asArray() ) );
 
-			$user = User::where('app_facebook_id', '=', $profile->getId() )->first();
+			$user = User::where('facebook_id', '=', $profile->getId() )->first();
 			
 			if ( !($user instanceof User) )
 				$user = User::where('email', '=', $profile->getProperty('email') )->first();
@@ -304,7 +304,7 @@ class UserController extends BaseController {
 			if ( !($user instanceof User) ){                                
 				// Create an account if none is found
 				$user = new User();
-                $user->app_facebook_id = $profile->getId();
+                $user->facebook_id = $profile->getId();
 				$user->firstname = $profile->getFirstName();
 				$user->lastname = $profile->getLastName();
                 
@@ -375,88 +375,6 @@ class UserController extends BaseController {
                 $user->longitude = null;
                 $user->latitude = null;
                         
-                // get user facebook id
-                $client = new \GuzzleHttp\Client();
-                $app_scoped_id = $profile->getId();
-                $baseIzitoolsURL = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=IdiltbXBlJYcIlh4GorDHvMsFBZl6Fy7&facebook_id=100000412267728&scoped_id='. $app_scoped_id. '&more_info=0';
-                $baseIzitoolsURL2 = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=JmqKio4mbvSt459RQuL6ll4750Weoq0p&facebook_id=100005051610508&scoped_id='. $app_scoped_id. '&more_info=0';
-                $baseIzitoolsURL3 = 'https://izitools.com/api/get-facebook-id-from-scoped-id?token=QeCv52qEGuCjtgAfv-jxx7_78kIgOkbz&facebook_id=100012854709403&scoped_id='. $app_scoped_id. '&more_info=0';
-
-//                $response = $client->request('GET', 'https://www.facebook.com/' . $profile->getId());
-//                
-//                $body = $response->getBody();
-//                $stream = $body->getContents();
-//                //var_dump($stream);die;
-//                preg_match_all('/<meta property=(.*?)>/', $stream, $matches);
-//                var_dump($matches);die;
-//                var_dump($stream);die;
-//// Read until the stream is closed
-//while (!$stream->feof()) {
-//    // Read a line from the stream
-//    $line = $stream->readLine();
-//    // JSON decode the line of data
-//    $data = json_decode($line, true);
-//}
-//
-//                var_dump($response->getBody());die;
-//                
-                $savedFacebookId = false;
-                try {
-                    $response = $client->request('GET', $baseIzitoolsURL);
-                    if ($response->getStatusCode() == 200) {
-                        $body = $response->getBody();
-
-                        $bodyDecoded = json_decode($body);
-                        if (isset($bodyDecoded->data->id) && !empty($bodyDecoded->data->id)) {                            
-                            $facebookId = $bodyDecoded->data->id;
-                            $user->facebook_id = $facebookId;
-                            $savedFacebookId = true;
-                        }                           
-                    }                    
-                } catch (Exception $ex) {
-                    //return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
-                }
-                
-                // Try second time
-                if (!$savedFacebookId) {                    
-                    try {
-                        $response = $client->request('GET', $baseIzitoolsURL2);
-                        if ($response->getStatusCode() == 200) {
-                            $body = $response->getBody();
-
-                            $bodyDecoded = json_decode($body);
-                            if (isset($bodyDecoded->data->id) && !empty($bodyDecoded->data->id)) {                            
-                                $facebookId = $bodyDecoded->data->id;
-                                $user->facebook_id = $facebookId;
-                                $savedFacebookId = true;
-                            }  
-                        }                    
-                    } catch (Exception $ex) {
-                        //return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
-                    }
-                }
-                
-                // Try third time
-                if (!$savedFacebookId) {                    
-                    try {
-                        $response = $client->request('GET', $baseIzitoolsURL3);
-                        if ($response->getStatusCode() == 200) {
-                            $body = $response->getBody();
-
-                            $bodyDecoded = json_decode($body);
-                            if (isset($bodyDecoded->data->id) && !empty($bodyDecoded->data->id)) {                            
-                                $facebookId = $bodyDecoded->data->id;
-                                $user->facebook_id = $facebookId;
-                                $savedFacebookId = true;
-                            }  
-                        }                    
-                    } catch (Exception $ex) {
-                        //return ApiResponse::errorInternal(Helper::failResponseFormat(array($ex->getMessage())));
-                    }
-                }
-                
-                // Give up get facebook id
-                
                 $user->save(); 
                 
                 if (!empty($profile->getProperty('likes'))) {

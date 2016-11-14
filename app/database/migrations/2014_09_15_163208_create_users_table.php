@@ -23,7 +23,6 @@ class CreateUsersTable extends Migration {
             $table->string('education')->nullable();
             $table->string('lastname');
             $table->string('password');
-            $table->string('app_facebook_id')->nullable();
             $table->string('facebook_id')->nullable();
             $table->string('about')->nullable();
             $table->string('birthday')->nullable();

@@ -33,6 +33,7 @@ class PhotoController extends BaseController {
 	}
   
     public function store() {
+        ini_set('memory_limit', '-1');
         $input = Input::all();
 		$photo = '';
         
