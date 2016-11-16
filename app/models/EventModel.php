@@ -111,6 +111,9 @@ class EventModel extends BaseModel {
             }
         }
         
+        // only get active event
+        $query->where('r.end_date', '>', date("Y-m-d H:i:s"));
+        
         foreach ($sort as $key => $value) {
             $query->orderBy('r.' . $key, $value);    
         }
