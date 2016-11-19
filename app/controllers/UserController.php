@@ -755,9 +755,45 @@ class UserController extends BaseController {
 	 *	Show all active sessions for the specified user, no access right check
 	 *	@param user User
 	 */
-	public function show($user) {        
+	public function show($user) {
+        
 //		$user->sessions;
 		// Log::info('<!> Showing : '.$user );
+        if ( !Input::has('token') ) {
+            return ApiResponse::errorUnauthorized(Helper::failResponseFormat (array("No token given.")));
+        }
+
+        $currentLoggedInUser = Token::userFor ( Input::get('token') );
+        
+        if ( empty($currentLoggedInUser) ) {
+            return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
+        }
+        
+        $currentLoggedInUserInterest = $currentLoggedInUser->interests;        
+        $currentLoggedInUserInterestArray = $currentLoggedInUserInterest->toArray();        		
+        $userObjectInterest = $user->interests;
+        $userObjectInterestArray = $userObjectInterest->toArray();
+        
+        // Check common interest
+        $arrayInterest = array();
+            
+        if ($currentLoggedInUser->_id != $user->_id) {            
+
+            if (count($currentLoggedInUserInterestArray) > 0 &&
+                    count($userObjectInterestArray) > 0) {
+                foreach ($currentLoggedInUserInterestArray as $singleInterest) {
+                    foreach ($userObjectInterestArray as $singleUserInterest) {
+                        if ($singleInterest['page_id'] == $singleUserInterest['page_id']) {
+                            $arrayInterest[] = $singleUserInterest;
+                        }
+                    }
+                }
+            }
+        }
+        
+        unset($user->interests);
+        $user->common_interests = $arrayInterest;
+        
         $user->photos;
         $user->instagrams;
         $user->short_interests = Interest::where('user_id', $user->_id)->take(4)->get();
