@@ -20,7 +20,8 @@ class EventModel extends BaseModel {
     
     protected static $createRules = array(
         'period'        => 'required|numeric',
-        'city_id'       => 'required',
+        'city'          => 'required',
+        'country'       => 'required',
         'age_start'     => 'required|integer|min:18|max:55',
         'age_end'       => 'required|integer|min:18|max:55|greater_than:age_start',
         'gender'        => 'required|in:male,female,both',

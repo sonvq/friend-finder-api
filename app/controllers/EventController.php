@@ -215,7 +215,23 @@ class EventController extends BaseController {
 
 		if ( $validator->passes() ) {
 
-			$event = new EventModel();                     
+			$event = new EventModel();   
+            
+            $city = new City();
+            $city->country = $input['country'];
+            $city->city = $input['city'];
+            
+            // get existing city
+            $existingCity = City::where('city', $input['city'])->where('country', $input['country'])->first();
+            
+            if ($existingCity) {
+                
+            } else {
+                if ( !$city->save() ) {
+                    return ApiResponse::errorInternal(Helper::failResponseFormat (array('An error occured. Please, try again.')));
+                }
+                $existingCity = $city;
+            }
         
 			$event->user_id             = $user->_id;
 			$event->gender              = $input['gender'];
@@ -226,7 +242,7 @@ class EventController extends BaseController {
             $event->created_at          = $input['created_at'];
             $event->latitude            = $input['latitude'];
             $event->longitude           = $input['longitude'];
-            $event->city_id             = $input['city_id'];
+            $event->city_id             = $existingCity->_id;
             
             $plusMinutes = '+' . $event->period * 60;            
             $event->end_date = date("Y-m-d H:i:s", strtotime("$plusMinutes minutes"));

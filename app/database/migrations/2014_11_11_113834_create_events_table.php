@@ -20,7 +20,7 @@ class CreateEventsTable extends Migration {
             $table->integer('age_start');
             $table->integer('age_end');
             $table->string('gender');
-            $table->string('city_id')->nullable();
+            $table->integer('city_id')->nullable();
             $table->dateTime('end_date');
             $table->decimal('longitude', 9, 6);
             $table->decimal('latitude', 8, 6);

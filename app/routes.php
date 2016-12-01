@@ -69,6 +69,8 @@ Route::group(array('prefix' => 'v1'), function(){
         
         Route::resource('photos', 'PhotoController');
         
+        Route::resource('cities', 'CityController');
+        
         Route::post('photos/{id}/update', array('as' => 'v1.photos.update', 'uses' => 'PhotoController@updatePhoto'));
 
         Route::resource('interests', 'InterestController');
