@@ -69,7 +69,7 @@ class EventController extends BaseController {
 
     }
     
-	public function index() {
+    public function index() {
         
         $query = $this->processInput();               
 
@@ -78,6 +78,20 @@ class EventController extends BaseController {
             return ApiResponse::errorNotFound(Helper::failResponseFormat(array('User not found.')));
         }
        
+        $currentLoggedInUser = $user;
+        $currentLoggedInUserInterest = $currentLoggedInUser->interests;
+        $currentLoggedInUserInterestArray = $currentLoggedInUserInterest->toArray();
+
+        // Get friends of first user
+        $friendFirstUser = Friend::where('user_id', $user->_id)->get();                
+        $arrayFriendFirstUser = array();
+        if (count($friendFirstUser) > 0) {
+            foreach ($friendFirstUser as $singleFriend) {
+                $arrayFriendFirstUser[$singleFriend->friend_id] = $singleFriend->friend_name;
+            }           
+        }
+
+
         // Check user is account plus or not
         $plus = Plus::where('user_id', $user->_id)->where('end_date', '>=', date("Y-m-d H:i:s"))->first();
         $userHasPlus = false;
@@ -123,6 +137,54 @@ class EventController extends BaseController {
                 $object->like_count = count(Like::where('event_id', $object->_id)->where('status', 'like')->get());
                 
                 $object->accepted_count = count(Like::where('event_id', $object->_id)->where('is_accepted', 1)->get());
+                
+                // Check common interest
+                $userObjectInterest = $userObject->interests;
+                $userObjectInterestArray = $userObjectInterest->toArray();                
+                $arrayInterest = array();
+                if (count($currentLoggedInUserInterestArray) > 0 &&
+                        count($userObjectInterestArray) > 0) {
+                    foreach ($currentLoggedInUserInterestArray as $singleInterest) {
+                        foreach ($userObjectInterestArray as $singleUserInterest) {
+                            if ($singleInterest['page_id'] == $singleUserInterest['page_id']) {
+                                $arrayInterest[] = $singleUserInterest;
+                            }
+                        }
+                    }
+                }
+                $object->common_interests = $arrayInterest;
+
+                // Check mutual friends
+                // Get friends of second user
+                $friendSecondUser = Friend::where('user_id', $userObject->_id)->get();        
+                $friendMutuals = array();
+                
+                $arrayFriendSecondUser = array();
+
+                if (count($friendFirstUser) > 0 && count($friendSecondUser) > 0) {
+                    foreach ($friendSecondUser as $singleFriend) {
+                        $arrayFriendSecondUser[$singleFriend->friend_id] = $singleFriend->friend_name;
+                    }
+
+                    $sameFriend = array_intersect($arrayFriendFirstUser, $arrayFriendSecondUser);
+                    $dataArray = array();
+                    if (count($sameFriend) > 0) {
+                        foreach ($sameFriend as $key => $value) {
+                            $objectMutual = new stdClass();
+                            $objectMutual->id = $key;
+                            $objectMutual->name = $value;
+                            $dataArray[] = $objectMutual;
+                        }
+                        $friendMutuals['data'] = $dataArray;
+                    } else {
+                        $friendMutuals['data'] = array();
+                    }            
+                } else {
+                    // return empty $friendMutuals
+                    $friendMutuals['data'] = array();
+                }
+                
+                $object->friend_mutuals = $friendMutuals;                
             }
             
             // TODO: optimize
