@@ -29,7 +29,7 @@ class Rating extends BaseModel {
             'receiver_id' => 'required|numeric|already_exist_rating:' . $event_id. '|valid_user',
             'sender_id' => 'required|numeric',
             'rating' => 'required|integer|in:1,2,3,4,5',
-            'event_id' => 'required|event_has_finished|liked_each_other:' . $receiver_id
+            'event_id' => 'required|liked_each_other:' . $receiver_id
         );
     }
     
